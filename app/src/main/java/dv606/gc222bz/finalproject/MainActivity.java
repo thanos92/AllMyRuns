@@ -487,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             while(isRunning){
                 long millis = (System.nanoTime() - startTime)/Costants.MILLIS_TO_SECONDS_FACTOR + delay;
                 mLastTimer = millis;
-                String hms = Utilities.formatLongToTime(millis);
+                String hms = Utilities.formatLongToTimer(millis);
                 handler.post(new TimerMessage(hms));
                 SystemClock.sleep(100);
             }

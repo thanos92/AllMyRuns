@@ -13,6 +13,7 @@ public class Run {
     private String coordinates;
     private String name;
     private float distance;
+    private long time;
 
     public long getId() {
         return id;
@@ -76,5 +77,13 @@ public class Run {
 
     public void setCoordinates(String coordinates) {
         this.coordinates = coordinates;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

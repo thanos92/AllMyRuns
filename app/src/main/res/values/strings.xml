@@ -46,10 +46,23 @@
     <string name="calories_welcome_message">This value will be used to estimate the burned calories</string>
     <string name="insert_welcom_message">Insert your weight</string>
     <string name="error_message">Error</string>
+    <string name="history_label">My history</string>
+    <string name="duration_text">Duration</string>
+    <string name="sort_by_time">Sort by time</string>
+    <string name="sort_by_calories">Sort by calories</string>
+    <string name="sort_by_date">Sort by date</string>
+    <string name="sort_by_distance">Sort by distance</string>
+    <string name="sort_by_speed">Sort by speed</string>
+    <string name="prefs_order_type">prefs_order_type</string>
 
     <string-array name="gps_frequency_text">
         <item>20 seconds</item>
         <item>40 seconds</item>
         <item>60 seconds</item>
+    </string-array>
+    <string-array name="history_sort_type">
+      <item>Sort by time</item>
+      <item>Sort by distance</item>
+      <item>Sort by calories</item>
     </string-array>
 </resources>

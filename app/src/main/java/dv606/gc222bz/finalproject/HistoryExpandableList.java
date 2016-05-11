@@ -136,7 +136,7 @@ public class HistoryExpandableList extends BaseExpandableListAdapter {
         });
 
 
-        timeView.setText(String.format(context.getString(R.string.running_time_text), Utilities.formatLongToTime(child.getEndDate() - child.getStartDate())));
+        timeView.setText(String.format(context.getString(R.string.running_time_text), Utilities.formatLongToTimer(child.getTime())));
         caloriesView.setText(String.format(context.getString(R.string.burned_calories_text), PreferenceHelper.getCaloriesWithUnit(context, child.getCalories())));
         speedView.setText(String.format(context.getString(R.string.child_speed_text) , PreferenceHelper.getSpeedWithUnit(context, child.getSpeed())));
         distanceView.setText(String.format(context.getString(R.string.child_distance_text), PreferenceHelper.getDistanceWithUnit(context, (int)child.getDistance())));
@@ -147,6 +147,12 @@ public class HistoryExpandableList extends BaseExpandableListAdapter {
     @Override
     public boolean isChildSelectable(int i, int i1) {
         return false;
+    }
+
+    public void addAll(List<Run> runs){
+        this.runs.clear();
+        this.runs.addAll(runs);
+        notifyDataSetChanged();
     }
 
     public void removeGroup(int group) {

@@ -88,4 +88,18 @@ public class PreferenceHelper {
 
     }
 
+    public static int getOrderType(Context context){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        int orderType = prefs.getInt(context.getString(R.string.prefs_order_type), R.id.sort_date);
+        return orderType;
+
+    }
+
+    public static void setOrderType(Context context, int orderType){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefEditor = prefs.edit();
+        prefEditor.putInt(context.getString(R.string.prefs_order_type), orderType);
+        prefEditor.apply();
+    }
+
 }

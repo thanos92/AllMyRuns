@@ -17,8 +17,10 @@ public class RunsDataSource {
     private String[] RunsColumns = {
             RunsDBHelper.COLUMN_ID, RunsDBHelper.COLUMN_START_DATE, RunsDBHelper.COLUMN_END_DATE
             ,RunsDBHelper.COLUMN_CALORIES_NAME,RunsDBHelper.COLUMN_SPEED_NAME, RunsDBHelper.COLUMN_DISTANCE_NAME,
-            RunsDBHelper.COLUMN_COORDINATES_NAME, RunsDBHelper.COLUMN_RUN_NAME, RunsDBHelper.COLUMN_PAUSE_TIME
+            RunsDBHelper.COLUMN_COORDINATES_NAME, RunsDBHelper.COLUMN_RUN_NAME, RunsDBHelper.COLUMN_END_DATE + " - " + RunsDBHelper.COLUMN_START_DATE +" AS DIFF"
     };
+
+    public static final int DATE_SORT = 1, TIME_SORT = 8, CALORIES_SORT = 3, SPEED_SORT = 4, DISTANCE_SORT = 5;
 
     public RunsDataSource(Context context){
         dbHelper = new RunsDBHelper(context);
@@ -55,10 +57,18 @@ public class RunsDataSource {
     }
 
 
-    public List<Run> getAllRun(){
+    public List<Run> getAllRun(int orderType){
         ArrayList<Run> runs = new ArrayList<Run>();
 
-        Cursor cursor = database.query(true, RunsDBHelper.RUNS_TABLE_NAME, RunsColumns,null, null, null, null, RunsDBHelper.COLUMN_START_DATE + " DESC", null);
+        String orderquery = null;
+        if(orderType != 8){
+            orderquery = RunsColumns[orderType]+ " DESC";
+        }
+        else {
+            orderquery ="DIFF DESC";
+        }
+
+        Cursor cursor = database.query(true, RunsDBHelper.RUNS_TABLE_NAME, RunsColumns ,null, null, null, null, orderquery, null);
 
         if(cursor != null && cursor.getCount() > 0){
             while(cursor.moveToNext()){
@@ -98,6 +108,7 @@ public class RunsDataSource {
         run.setDistance(cursor.getFloat(5));
         run.setCoordinates(cursor.getString(6));
         run.setName(cursor.getString(7));
+        run.setTime(cursor.getLong(8));
         return  run;
     }
 

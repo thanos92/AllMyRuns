@@ -47,7 +47,7 @@
                     android:id="@+id/timer_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Duration"
+                    android:text="@string/duration_text"
                     android:layout_below="@id/timer_text"
                     android:layout_centerHorizontal="true"/>
 
@@ -63,7 +63,6 @@
                 android:id="@+id/distance_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 Km"
                 android:textSize="24sp"
                 android:layout_alignParentEnd="true"/>
 
@@ -71,7 +70,6 @@
                 android:id="@+id/calories_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 Kcal"
                 android:textSize="24sp"
                 android:layout_centerInParent="true"/>
 
@@ -79,7 +77,6 @@
                 android:id="@+id/cal_speed"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 km/h"
                 android:textSize="24sp"
                 android:layout_alignParentStart="true"/>
 

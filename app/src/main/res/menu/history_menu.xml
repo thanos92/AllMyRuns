@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="all">
+        <item android:id="@+id/sort_date" android:title="@string/sort_by_date" android:checkable="true" />
+        <item android:id="@+id/sort_time" android:title="@string/sort_by_time" android:checkable="true" />
+        <item android:id="@+id/sort_calories" android:title="@string/sort_by_calories" android:checkable="true" />
+        <item android:id="@+id/sort_distance" android:title="@string/sort_by_distance" android:checkable="true" />
+        <item android:id="@+id/sort_speed" android:title="@string/sort_by_speed" android:checkable="true" />
+    </group>
     <item android:title="@string/settings_text" android:id="@+id/option_settings" android:titleCondensed="@string/settings_text"/>
 </menu>

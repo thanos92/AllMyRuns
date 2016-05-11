@@ -118,7 +118,7 @@ public class Utilities {
         return Math.round(weightInKilogram * 0.9f * (distanceInMeters / 1000));
     }
 
-    public static String formatLongToTime(long millis){
+    public static String formatLongToTimer(long millis){
         return String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
                 TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
                 TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));
