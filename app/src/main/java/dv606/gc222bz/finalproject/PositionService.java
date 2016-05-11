@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.location.GpsStatus;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -30,8 +31,6 @@ import dv606.gc222bz.finalproject.utilities.Utilities;
 public class PositionService extends Service implements android.location.LocationListener, GpsStatus.Listener{
 
     public static final String START_INTENT =   "dv606.gc222bz.finalproject.START_INTENT";
-    public static final String STOP_INTENT =   "dv606.gc222bz.finalproject.STOP_INTENT";
-    public static final String AWAIT_SAVE_INTENT =   "dv606.gc222bz.finalproject.AWAIT_SAVE_INTENT";
     public static final String POSITION_GETTED_INTENT =   "dv606.gc222bz.finalproject.POSITION_GETTED_INTENT";
     public static final String READY_INTENT =   "dv606.gc222bz.finalproject.READY_INTENT";
 
@@ -46,11 +45,12 @@ public class PositionService extends Service implements android.location.Locatio
     private long mForegroundTime, mLastForegroundTime;
     private int mDistance, mConsumedCalories;
     private float mSpeed, mMediumSpeed, maxSpeed;
-    private boolean isGPSFix;
+    private boolean isGPSFix, isWarnPlayed = true;
 
     private long mGpsUpdateInterval;
 
     private SharedPreferences prefs;
+    private MediaPlayer player;
 
     private LocationManager locationManager;
 
@@ -380,10 +380,14 @@ public class PositionService extends Service implements android.location.Locatio
                 }
 
                 if (isGPSFix) { // A fix has been acquired.
-
+                    isWarnPlayed = false;
                     // Do something.
                 } else {
-
+                    if(!isWarnPlayed){
+                        player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
+                        player.start();
+                        isWarnPlayed = true;
+                    }
                 }
 
                 break;

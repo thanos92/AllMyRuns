@@ -10,6 +10,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean isRunning = false;
     private GoogleMap mMap;
     Handler handler = new Handler();
+
+    MediaPlayer player;
 
     private BroadcastReceiver receiver;
 
@@ -281,6 +287,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if(intent.getAction().equals(PositionService.START_INTENT)){
 
+                    player = MediaPlayer.create(MainActivity.this, R.raw.activity_started);
+                    player.start();
+
                     long startTime = intent.getLongExtra(getString(R.string.start_time_extra), 0);
                     isRunning = true;
                     new Thread(new TimerTask(startTime)).start();
@@ -325,6 +334,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
         }
+
+
 
     }
 
