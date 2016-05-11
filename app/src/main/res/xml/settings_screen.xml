@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General Settings">
+        <EditTextPreference
+            android:key="@string/prefs_weight"
+            android:title="Set Weight"
+            android:inputType="number"
+            android:maxLength="3"
+            android:defaultValue="50" />
+
+        <ListPreference
+            android:title="Gps update frequency"
+            android:defaultValue="20"
+            android:entryValues="@array/gps_frequency_time"
+            android:entries="@array/gps_frequency_text"
+            android:summary="@string/gps_frequency_summary"
+            android:key="@string/prefs_gps_frequency">
+        </ListPreference>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Unit Measure settings">
+        <ListPreference android:dialogTitle="Select speed unit measure"
+            android:defaultValue="1"
+            android:entryValues="@array/speed_array_index"
+            android:entries="@array/speed_measure_unit"
+            android:key="prefs_speed"
+            android:title="Select speed measure unit"
+            android:summary="change the measure unit of the speed">
+        </ListPreference>
+        <ListPreference android:dialogTitle="Select speed unit measure"
+            android:defaultValue="1"
+            android:entryValues="@array/array_index"
+            android:entries="@array/distance_measure_unit"
+            android:key="prefs_distance"
+            android:title="Select distance measure unit"
+            android:summary="change the measure unit of the distance">
+        </ListPreference>
+    </PreferenceCategory>
+
+
+</PreferenceScreen>
