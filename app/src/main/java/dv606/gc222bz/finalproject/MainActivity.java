@@ -198,9 +198,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void resumeMap(List<LatLng> points){
-        mMap.clear();
-        for(LatLng point : points){
-            makePoint(point);
+
+        if(mMap != null){
+            mMap.clear();
+            for(LatLng point : points){
+                makePoint(point);
+            }
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(points.size() - 1 ), 20));
         }
     }
 
