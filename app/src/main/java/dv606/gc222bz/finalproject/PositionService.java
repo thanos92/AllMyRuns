@@ -116,6 +116,12 @@ public class PositionService extends Service implements android.location.Locatio
     @Override
     public void onDestroy(){
 
+        if(player != null){
+            player.reset();
+            player.release();
+            player = null;
+        }
+
         mRunsDataSource.close();
     }
 
@@ -227,6 +233,8 @@ public class PositionService extends Service implements android.location.Locatio
 
             if(mActualState == READY_STATE){
                 changeState(START_STATE);
+                player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
+                player.start();
                 mStartTime = System.currentTimeMillis();
 
                 mDistance = 0;
@@ -292,7 +300,8 @@ public class PositionService extends Service implements android.location.Locatio
 
     @Override
     public void onProviderDisabled(String provider) {
-
+        isGPSFix = false;
+        playDisabledGpsSound();
     }
 
     public void sendPositionBroadcast(int distance, int calories , float calculatedSpeed, double lat, double lon){
@@ -380,14 +389,14 @@ public class PositionService extends Service implements android.location.Locatio
                 }
 
                 if (isGPSFix) { // A fix has been acquired.
+                    if(isWarnPlayed && mActualState == START_STATE && (player == null || !player.isPlaying())){
+                        player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
+                        player.start();
+                    }
                     isWarnPlayed = false;
                     // Do something.
                 } else {
-                    if(!isWarnPlayed){
-                        player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
-                        player.start();
-                        isWarnPlayed = true;
-                    }
+                    playDisabledGpsSound();
                 }
 
                 break;
@@ -397,6 +406,15 @@ public class PositionService extends Service implements android.location.Locatio
                 isGPSFix = true;
 
                 break;
+        }
+    }
+
+    public void playDisabledGpsSound(){
+
+        if(!isWarnPlayed && mActualState == START_STATE && (player == null || !player.isPlaying())){
+            player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
+            player.start();
+            isWarnPlayed = true;
         }
     }
 

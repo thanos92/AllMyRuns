@@ -55,8 +55,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleMap mMap;
     Handler handler = new Handler();
 
-    MediaPlayer player;
-
     private BroadcastReceiver receiver;
 
     private Button mStartButton;
@@ -286,9 +284,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onReceive(Context context, Intent intent) {
 
                 if(intent.getAction().equals(PositionService.START_INTENT)){
-
-                    player = MediaPlayer.create(MainActivity.this, R.raw.activity_started);
-                    player.start();
 
                     long startTime = intent.getLongExtra(getString(R.string.start_time_extra), 0);
                     isRunning = true;
