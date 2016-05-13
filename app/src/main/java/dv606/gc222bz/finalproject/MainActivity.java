@@ -236,12 +236,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 return true;
             }
             case R.id.option_camera_auto:{
-                PreferenceHelper.setCameraAutoEnabled(this, item.isChecked());
+                PreferenceHelper.setCameraAutoEnabled(this, !item.isChecked());
                 item.setChecked(!item.isChecked());
                 return true;
             }
             case R.id.option_enable_audio:{
-                PreferenceHelper.setAudioEnabled(this, item.isChecked());
+                PreferenceHelper.setAudioEnabled(this, !item.isChecked());
                 item.setChecked(!item.isChecked());
                 return true;
             }

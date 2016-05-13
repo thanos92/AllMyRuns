@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dv606.gc222bz.finalproject.database.RunsDataSource;
+import dv606.gc222bz.finalproject.utilities.Costants;
 import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
 import dv606.gc222bz.finalproject.utilities.Utilities;
 
@@ -80,7 +81,7 @@ public class PositionService extends Service implements android.location.Locatio
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                , mGpsUpdateInterval,
+                , Costants.GPS_START_INTERVAL,
                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
 
         locationManager.addGpsStatusListener(this);
@@ -130,7 +131,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
-        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 30 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
+        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 20 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
 
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
@@ -141,6 +142,11 @@ public class PositionService extends Service implements android.location.Locatio
             if(mActualState == READY_STATE){
 
                 changeState(START_STATE);
+
+                locationManager.removeUpdates(PositionService.this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
+                        , mGpsUpdateInterval,
+                        MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
 
                 if(PreferenceHelper.getIsAudioEnabled(this)){
                     player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
@@ -250,10 +256,6 @@ public class PositionService extends Service implements android.location.Locatio
         if(key.equals(getString(R.string.prefs_gps_frequency))){
 
             mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
-            locationManager.removeUpdates(PositionService.this);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                    , mGpsUpdateInterval,
-                    MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
         }
     }
     //endregion
@@ -353,8 +355,14 @@ public class PositionService extends Service implements android.location.Locatio
         }
     }
 
-    public void startPositionService(){
+    public void startPositionService()
+    {
         changeState(READY_STATE);
+
+        locationManager.removeUpdates(PositionService.this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
+                , Costants.GPS_INIT_INTERVAL,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
     }
 
     public void stopPositionService(boolean saveData){
