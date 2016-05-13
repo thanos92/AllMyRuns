@@ -28,8 +28,9 @@ import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
 import dv606.gc222bz.finalproject.utilities.Utilities;
 
 
-public class PositionService extends Service implements android.location.LocationListener, GpsStatus.Listener{
+public class PositionService extends Service implements android.location.LocationListener, GpsStatus.Listener, SharedPreferences.OnSharedPreferenceChangeListener {
 
+    //region fields
     public static final String START_INTENT =   "dv606.gc222bz.finalproject.START_INTENT";
     public static final String POSITION_GETTED_INTENT =   "dv606.gc222bz.finalproject.POSITION_GETTED_INTENT";
     public static final String READY_INTENT =   "dv606.gc222bz.finalproject.READY_INTENT";
@@ -57,6 +58,9 @@ public class PositionService extends Service implements android.location.Locatio
     private ArrayList<LatLng> collectedPoints = new ArrayList<>();
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 5;
 
+    //endregion
+
+    //region events
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -70,6 +74,8 @@ public class PositionService extends Service implements android.location.Locatio
         mRunsDataSource.open();
 
         mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
+        Toast.makeText(this, "" +mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
+
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -81,21 +87,8 @@ public class PositionService extends Service implements android.location.Locatio
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        //if the user modify the gps update time a new request will be created and setted in the location manager
-        prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener(){
 
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-                if(key.equals(getString(R.string.prefs_gps_frequency))){
-
-                    mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
-                    locationManager.removeUpdates(PositionService.this);
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                            , mGpsUpdateInterval,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
-                }
-            }
-        });
+        prefs.registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -124,6 +117,239 @@ public class PositionService extends Service implements android.location.Locatio
         }
 
         mRunsDataSource.close();
+    }
+
+
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+        mLastLocation = location;
+        mLastLocationMillis = SystemClock.elapsedRealtime();
+
+        Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
+
+        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 50 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
+
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+
+            collectedPoints.add(new LatLng(latitude,longitude));
+
+
+            if(mActualState == READY_STATE){
+
+                changeState(START_STATE);
+
+                if(PreferenceHelper.getIsAudioEnabled(this)){
+                    player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
+                    player.start();
+                }
+
+                mStartTime = System.currentTimeMillis();
+                mDistance = 0;
+                mSpeed = 0;
+                mMediumSpeed = mSpeed;
+                maxSpeed = mSpeed;
+                mLastTime = System.currentTimeMillis();
+                mLastPreciseLocation = location;
+            }
+            else {
+
+                if(mLastPreciseLocation.getLatitude() !=latitude && mLastPreciseLocation.getLongitude() != longitude){
+
+                    long currentTime = System.currentTimeMillis();
+
+                    //calculate the distance between the current position and the last position
+                    int result = Math.round(location.distanceTo(mLastPreciseLocation));
+
+                    mDistance = mDistance + result;
+
+                    //calculate the time elapsed between the current position and the last position
+                    long timeInSecond = ((currentTime - mLastTime) / 1000);
+
+                    if(timeInSecond != 0){
+
+                        //use space/time formula to calculate the speed
+                        float calculatedSpeed = ((float)result / timeInSecond);
+
+
+                        if(calculatedSpeed > maxSpeed){
+                            maxSpeed = calculatedSpeed;
+                        }
+
+                        if(mMediumSpeed != 0){
+                            mMediumSpeed = (mMediumSpeed + calculatedSpeed) / 2;
+                        }
+                        else {
+                            mMediumSpeed = calculatedSpeed;
+                        }
+
+                        mSpeed = calculatedSpeed;
+
+                        mLastTime = currentTime;
+                        mLastPreciseLocation = location;
+
+                    }
+                }
+            }
+
+            int weight = Integer.parseInt(PreferenceHelper.getWeightPrefs(PositionService.this));
+            mConsumedCalories = Utilities.calculateCalories(weight, mDistance);
+            sendPositionBroadcast(mDistance, mConsumedCalories, mMediumSpeed, latitude, longitude);
+        }
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+        isGPSFix = false;
+        playDisabledGpsSound();
+    }
+
+    @Override
+    public void onGpsStatusChanged(int event) {
+        switch (event) {
+            case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
+                if (mLastLocation != null){
+                    //if the last location is old of an interval the gps is disconnected
+                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (mGpsUpdateInterval * 2);
+                }
+
+                if (isGPSFix) { // A fix has been acquired.
+                    playEnabledGpsSound();
+                    isWarnPlayed = false;
+                } else {
+                    playDisabledGpsSound();
+                }
+
+                break;
+            case GpsStatus.GPS_EVENT_FIRST_FIX:
+
+
+                isGPSFix = true;
+
+                break;
+        }
+    }
+
+    //if the user modify the gps update time a new request will be created and set in the location manager
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+        if(key.equals(getString(R.string.prefs_gps_frequency))){
+
+            mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
+            locationManager.removeUpdates(PositionService.this);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
+                    , mGpsUpdateInterval,
+                    MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
+        }
+    }
+    //endregion
+
+    //region method
+
+    public void sendPositionBroadcast(int distance, int calories , float calculatedSpeed, double lat, double lon){
+
+        //send a broadcast to the main activity in order to update the ui with the new data
+        Intent positionIntent = new Intent();
+        positionIntent.setAction(POSITION_GETTED_INTENT);
+        positionIntent.putExtra(getString(R.string.calories_extra), calories);
+        positionIntent.putExtra(getString(R.string.distance_extra), distance);
+        positionIntent.putExtra(getString(R.string.calculated_speed_extra), calculatedSpeed);
+        positionIntent.putExtra(getString(R.string.lat_extra), lat);
+        positionIntent.putExtra(getString(R.string.lon_extra), lon);
+        sendBroadcast(positionIntent);
+    }
+
+    public float getmMediumSpeed(){
+        return mMediumSpeed;
+    }
+
+    public int getmDistance(){
+        return mDistance;
+    }
+
+    public int getmConsumedCalories(){return mConsumedCalories;}
+
+
+    private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+
+    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+        if (currentBestLocation == null) {
+            // A new location is always better than no location
+            return true;
+        }
+
+        // Check whether the new location fix is newer or older
+        long timeDelta = location.getTime() - currentBestLocation.getTime();
+        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+        boolean isNewer = timeDelta > 0;
+
+        // If it's been more than two minutes since the current location, use the new location
+        // because the user has likely moved
+        if (isSignificantlyNewer) {
+            return true;
+            // If the new location is more than two minutes older, it must be worse
+        } else if (isSignificantlyOlder) {
+            return false;
+        }
+
+        // Check whether the new location fix is more or less accurate
+        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        boolean isLessAccurate = accuracyDelta > 0;
+        boolean isMoreAccurate = accuracyDelta < 0;
+        boolean isSignificantlyLessAccurate = accuracyDelta > 30;
+
+        // Check if the old and new location are from the same provider
+        boolean isFromSameProvider = isSameProvider(location.getProvider(),
+                currentBestLocation.getProvider());
+
+        // Determine location quality using a combination of timeliness and accuracy
+        if (isMoreAccurate) {
+            return true;
+        } else if (isNewer && !isLessAccurate) {
+            return true;
+        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Checks whether two providers are the same */
+    private boolean isSameProvider(String provider1, String provider2) {
+        if (provider1 == null) {
+            return provider2 == null;
+        }
+        return provider1.equals(provider2);
+    }
+
+    public void playEnabledGpsSound(){
+        if(isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
+            player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
+            player.start();
+        }
+    }
+
+    public void playDisabledGpsSound(){
+
+        if(!isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
+            player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
+            player.start();
+            isWarnPlayed = true;
+        }
     }
 
     public void startPositionService(){
@@ -214,223 +440,7 @@ public class PositionService extends Service implements android.location.Locatio
         return collectedPoints;
     }
 
-
-    //region api listner
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        mLastLocation = location;
-        mLastLocationMillis = SystemClock.elapsedRealtime();
-
-        System.out.println(location.getAccuracy());
-
-        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 50 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
-
-            double latitude = location.getLatitude();
-            double longitude = location.getLongitude();
-
-            collectedPoints.add(new LatLng(latitude,longitude));
-
-
-            if(mActualState == READY_STATE){
-
-                changeState(START_STATE);
-
-                if(PreferenceHelper.getIsAudioEnabled(this)){
-                    player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
-                    player.start();
-                }
-
-                mStartTime = System.currentTimeMillis();
-                mDistance = 0;
-                mSpeed = 0;
-                mMediumSpeed = mSpeed;
-                maxSpeed = mSpeed;
-                mLastTime = System.currentTimeMillis();
-                mLastPreciseLocation = location;
-            }
-            else {
-
-                if(mLastPreciseLocation.getLatitude() !=latitude && mLastPreciseLocation.getLongitude() != longitude){
-
-                    long currentTime = System.currentTimeMillis();
-
-                    //calculate the distance between the current position and the last position
-                    int result = Math.round(location.distanceTo(mLastPreciseLocation));
-
-                    mDistance = mDistance + result;
-
-                    //calculate the time elapsed between the current position and the last position
-                    long timeInSecond = ((currentTime - mLastTime) / 1000);
-
-                    if(timeInSecond != 0){
-
-                        //use space/time formula to calculate the speed
-                        float calculatedSpeed = ((float)result / timeInSecond);
-
-
-                        if(calculatedSpeed > maxSpeed){
-                            maxSpeed = calculatedSpeed;
-                        }
-
-                        if(mMediumSpeed != 0){
-                            mMediumSpeed = (mMediumSpeed + calculatedSpeed) / 2;
-                        }
-                        else {
-                            mMediumSpeed = calculatedSpeed;
-                        }
-
-                        mSpeed = calculatedSpeed;
-
-                        mLastTime = currentTime;
-                        mLastPreciseLocation = location;
-
-                    }
-                }
-            }
-
-            int weight = Integer.parseInt(PreferenceHelper.getWeightPrefs(PositionService.this));
-            mConsumedCalories = Utilities.calculateCalories(weight, mDistance);
-            sendPositionBroadcast(mDistance, mConsumedCalories, mMediumSpeed, latitude, longitude);
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-        isGPSFix = false;
-        playDisabledGpsSound();
-    }
-
-    public void sendPositionBroadcast(int distance, int calories , float calculatedSpeed, double lat, double lon){
-
-        //send a broadcast to the main activity in order to update the ui with the new data
-        Intent positionIntent = new Intent();
-        positionIntent.setAction(POSITION_GETTED_INTENT);
-        positionIntent.putExtra(getString(R.string.calories_extra), calories);
-        positionIntent.putExtra(getString(R.string.distance_extra), distance);
-        positionIntent.putExtra(getString(R.string.calculated_speed_extra), calculatedSpeed);
-        positionIntent.putExtra(getString(R.string.lat_extra), lat);
-        positionIntent.putExtra(getString(R.string.lon_extra), lon);
-        sendBroadcast(positionIntent);
-    }
-
-    public float getmMediumSpeed(){
-        return mMediumSpeed;
-    }
-
-    public int getmDistance(){
-        return mDistance;
-    }
-
-    public int getmConsumedCalories(){return mConsumedCalories;}
-
-
-    private static final int TWO_MINUTES = 1000 * 60 * 2;
-
-
-    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
-        if (currentBestLocation == null) {
-            // A new location is always better than no location
-            return true;
-        }
-
-        // Check whether the new location fix is newer or older
-        long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
-        boolean isNewer = timeDelta > 0;
-
-        // If it's been more than two minutes since the current location, use the new location
-        // because the user has likely moved
-        if (isSignificantlyNewer) {
-            return true;
-            // If the new location is more than two minutes older, it must be worse
-        } else if (isSignificantlyOlder) {
-            return false;
-        }
-
-        // Check whether the new location fix is more or less accurate
-        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-        boolean isLessAccurate = accuracyDelta > 0;
-        boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 30;
-
-        // Check if the old and new location are from the same provider
-        boolean isFromSameProvider = isSameProvider(location.getProvider(),
-                currentBestLocation.getProvider());
-
-        // Determine location quality using a combination of timeliness and accuracy
-        if (isMoreAccurate) {
-            return true;
-        } else if (isNewer && !isLessAccurate) {
-            return true;
-        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
-            return true;
-        }
-        return false;
-    }
-
-    /** Checks whether two providers are the same */
-    private boolean isSameProvider(String provider1, String provider2) {
-        if (provider1 == null) {
-            return provider2 == null;
-        }
-        return provider1.equals(provider2);
-    }
-
-    @Override
-    public void onGpsStatusChanged(int event) {
-        switch (event) {
-            case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
-                if (mLastLocation != null){
-                    //if the last location is old of an interval the gps is disconnected
-                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (mGpsUpdateInterval * 2);
-                }
-
-                if (isGPSFix) { // A fix has been acquired.
-                    playEnabledGpsSound();
-                    isWarnPlayed = false;
-                } else {
-                    playDisabledGpsSound();
-                }
-
-                break;
-            case GpsStatus.GPS_EVENT_FIRST_FIX:
-
-
-                isGPSFix = true;
-
-                break;
-        }
-    }
-
-    public void playEnabledGpsSound(){
-        if(isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
-            player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
-            player.start();
-        }
-    }
-
-    public void playDisabledGpsSound(){
-
-        if(!isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
-            player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
-            player.start();
-            isWarnPlayed = true;
-        }
-    }
-
+    //endregion
 
     public class PositionServiceBinder extends Binder {
         PositionService getService() {

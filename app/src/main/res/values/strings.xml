@@ -60,6 +60,8 @@
     <string name="enable_audio">Enable audio</string>
 
     <string-array name="gps_frequency_text">
+        <item>5 seconds</item>
+        <item>10 seconds</item>
         <item>20 seconds</item>
         <item>40 seconds</item>
         <item>60 seconds</item>
