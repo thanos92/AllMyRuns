@@ -56,7 +56,7 @@ public class PositionService extends Service implements android.location.Locatio
     private LocationManager locationManager;
 
     private ArrayList<LatLng> collectedPoints = new ArrayList<>();
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 5;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
 
     //endregion
 
@@ -74,7 +74,6 @@ public class PositionService extends Service implements android.location.Locatio
         mRunsDataSource.open();
 
         mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
-        Toast.makeText(this, "" +mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
 
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -129,7 +128,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
-        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 50 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
+        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 30 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
 
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
@@ -311,7 +310,7 @@ public class PositionService extends Service implements android.location.Locatio
         int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
         boolean isLessAccurate = accuracyDelta > 0;
         boolean isMoreAccurate = accuracyDelta < 0;
-        boolean isSignificantlyLessAccurate = accuracyDelta > 30;
+        boolean isSignificantlyLessAccurate = accuracyDelta > 20;
 
         // Check if the old and new location are from the same provider
         boolean isFromSameProvider = isSameProvider(location.getProvider(),
@@ -411,7 +410,7 @@ public class PositionService extends Service implements android.location.Locatio
         mLastForegroundTime = System.currentTimeMillis();
 
         Notification.Builder notificationBuilder= new Notification.Builder(getApplicationContext());
-        notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
+        notificationBuilder.setSmallIcon(R.drawable.ic_notification_icon);
         notificationBuilder.setContentTitle(getString(R.string.notification_title_text));
         notificationBuilder.setContentText(getString(R.string.notification_content_text));
         notificationBuilder.setLights(0x00ffff00, 1000, 0);

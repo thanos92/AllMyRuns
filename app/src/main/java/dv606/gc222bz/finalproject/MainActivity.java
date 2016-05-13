@@ -223,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         getMenuInflater().inflate(R.menu.main_menu, menu);
         this.mMenu = menu;
         menu.getItem(0).setChecked(PreferenceHelper.getCameraAutoEnabled(this));
+        menu.getItem(1).setChecked(PreferenceHelper.getIsAudioEnabled(this));
         return true;
     }
 
@@ -265,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             for(int i = 0; i< menuSize; i++){
                 MenuItem item = mMenu.getItem(i);
-                if(item.getItemId() != R.id.option_camera_auto){
+                if(item.getItemId() != R.id.option_camera_auto && item.getItemId() != R.id.option_enable_audio){
                     item.setEnabled(isEnabled);
                 }
             }

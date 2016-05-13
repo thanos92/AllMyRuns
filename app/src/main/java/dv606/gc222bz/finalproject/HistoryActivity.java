@@ -70,6 +70,7 @@ public class HistoryActivity extends AppCompatActivity {
             case R.id.option_settings:{
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
+                return true;
             }
             case R.id.sort_speed:{
                 PreferenceHelper.setOrderType(this, itemId);
