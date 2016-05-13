@@ -111,7 +111,7 @@ public class PreferenceHelper {
     public static void setAudioEnabled(Context context, boolean isAudioEnabled){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putBoolean(context.getString(R.string.prefs_order_type), isAudioEnabled);
+        prefEditor.putBoolean(context.getString(R.string.prefs_audio_enable), isAudioEnabled);
         prefEditor.apply();
     }
 

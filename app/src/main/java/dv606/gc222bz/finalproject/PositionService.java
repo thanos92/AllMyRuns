@@ -75,6 +75,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
 
+        Toast.makeText(this,""+mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
 
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -115,6 +116,7 @@ public class PositionService extends Service implements android.location.Locatio
             player = null;
         }
 
+        prefs.unregisterOnSharedPreferenceChangeListener(this);
         mRunsDataSource.close();
     }
 
