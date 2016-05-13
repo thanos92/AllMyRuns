@@ -81,6 +81,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
+        //if the user modify the gps update time a new request will be created and setted in the location manager
         prefs.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener(){
 
             @Override
@@ -146,7 +147,7 @@ public class PositionService extends Service implements android.location.Locatio
         changeState(STOP_STATE);
 
         if(saveData){
-            mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mSpeed, 0, mDistance, Utilities.coordinatesToString(collectedPoints), name);
+            mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mSpeed, mDistance, Utilities.coordinatesToString(collectedPoints), name);
         }
 
         resetField();
@@ -179,13 +180,14 @@ public class PositionService extends Service implements android.location.Locatio
 
 
     public void makeForeground(long foregroundTime){
+
         this.mForegroundTime = foregroundTime;
         mLastForegroundTime = System.currentTimeMillis();
 
         Notification.Builder notificationBuilder= new Notification.Builder(getApplicationContext());
         notificationBuilder.setSmallIcon(R.mipmap.ic_launcher);
-        notificationBuilder.setContentTitle("All my runs in execution");
-        notificationBuilder.setContentText("Tap to resum");
+        notificationBuilder.setContentTitle(getString(R.string.notification_title_text));
+        notificationBuilder.setContentText(getString(R.string.notification_content_text));
         notificationBuilder.setLights(0x00ffff00, 1000, 0);
         notificationBuilder.setOngoing(true);
         Intent intent = new Intent(this, MainActivity.class);
@@ -232,11 +234,15 @@ public class PositionService extends Service implements android.location.Locatio
 
 
             if(mActualState == READY_STATE){
-                changeState(START_STATE);
-                player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
-                player.start();
-                mStartTime = System.currentTimeMillis();
 
+                changeState(START_STATE);
+
+                if(PreferenceHelper.getIsAudioEnabled(this)){
+                    player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
+                    player.start();
+                }
+
+                mStartTime = System.currentTimeMillis();
                 mDistance = 0;
                 mSpeed = 0;
                 mMediumSpeed = mSpeed;
@@ -250,15 +256,17 @@ public class PositionService extends Service implements android.location.Locatio
 
                     long currentTime = System.currentTimeMillis();
 
+                    //calculate the distance between the current position and the last position
                     int result = Math.round(location.distanceTo(mLastPreciseLocation));
 
-                    System.out.println(mLastPreciseLocation.getLatitude() +"   " + mLastPreciseLocation.getLongitude() + "   " + location.getLatitude() + "   "+ location.getLongitude() +"  "+ result);
                     mDistance = mDistance + result;
 
+                    //calculate the time elapsed between the current position and the last position
                     long timeInSecond = ((currentTime - mLastTime) / 1000);
 
                     if(timeInSecond != 0){
 
+                        //use space/time formula to calculate the speed
                         float calculatedSpeed = ((float)result / timeInSecond);
 
 
@@ -306,6 +314,7 @@ public class PositionService extends Service implements android.location.Locatio
 
     public void sendPositionBroadcast(int distance, int calories , float calculatedSpeed, double lat, double lon){
 
+        //send a broadcast to the main activity in order to update the ui with the new data
         Intent positionIntent = new Intent();
         positionIntent.setAction(POSITION_GETTED_INTENT);
         positionIntent.putExtra(getString(R.string.calories_extra), calories);
@@ -385,23 +394,20 @@ public class PositionService extends Service implements android.location.Locatio
         switch (event) {
             case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
                 if (mLastLocation != null){
-                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < mGpsUpdateInterval * 2;
+                    //if the last location is old of an interval the gps is disconnected
+                    isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (mGpsUpdateInterval * 2);
                 }
 
                 if (isGPSFix) { // A fix has been acquired.
-                    if(isWarnPlayed && mActualState == START_STATE && (player == null || !player.isPlaying())){
-                        player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
-                        player.start();
-                    }
+                    playEnabledGpsSound();
                     isWarnPlayed = false;
-                    // Do something.
                 } else {
                     playDisabledGpsSound();
                 }
 
                 break;
             case GpsStatus.GPS_EVENT_FIRST_FIX:
-                // Do something.
+
 
                 isGPSFix = true;
 
@@ -409,9 +415,16 @@ public class PositionService extends Service implements android.location.Locatio
         }
     }
 
+    public void playEnabledGpsSound(){
+        if(isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
+            player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
+            player.start();
+        }
+    }
+
     public void playDisabledGpsSound(){
 
-        if(!isWarnPlayed && mActualState == START_STATE && (player == null || !player.isPlaying())){
+        if(!isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
             player.start();
             isWarnPlayed = true;

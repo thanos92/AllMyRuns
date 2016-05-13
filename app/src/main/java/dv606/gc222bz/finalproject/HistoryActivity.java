@@ -45,8 +45,6 @@ public class HistoryActivity extends AppCompatActivity {
     @Override
     public void onResume(){
         super.onResume();
-
-
         adapter = new HistoryExpandableList(HistoryActivity.this, new ArrayList<Run>());
         mList.setAdapter(adapter);
         refreshList(PreferenceHelper.getOrderType(this));

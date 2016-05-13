@@ -102,4 +102,17 @@ public class PreferenceHelper {
         prefEditor.apply();
     }
 
+    public static boolean getIsAudioEnabled(Context context){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean isAudioEnabled = prefs.getBoolean(context.getString(R.string.prefs_audio_enable), true);
+        return isAudioEnabled;
+    }
+
+    public static void setAudioEnabled(Context context, boolean isAudioEnabled){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefEditor = prefs.edit();
+        prefEditor.putBoolean(context.getString(R.string.prefs_order_type), isAudioEnabled);
+        prefEditor.apply();
+    }
+
 }

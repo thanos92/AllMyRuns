@@ -10,10 +10,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
-import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
@@ -87,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 mStartButton.setVisibility(View.INVISIBLE);
                 setEnabledOptionMenu(false);
             }
-            else if(awaitStarting){
+            else if(awaitStarting){ //is true when onActivityResult is called
                 awaitStarting = false;
                 startPositionService();
             }
@@ -148,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public void startPositionService(){
 
+        //if the gps is enabled start the service otherwise display a dialog
         if(Utilities.isGpsEnabled(MainActivity.this)){
 
             progressDialog = new ProgressDialog(MainActivity.this);
@@ -165,6 +162,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mPositionServiceBinder.startPositionService();
         }
         else{
+
             Utilities.showGpsDialog(MainActivity.this, 100);
         }
     }
@@ -241,6 +239,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 item.setChecked(!item.isChecked());
                 return true;
             }
+            case R.id.option_enable_audio:{
+                PreferenceHelper.setAudioEnabled(this, item.isChecked());
+                item.setChecked(!item.isChecked());
+                return true;
+            }
             case R.id.option_settings:{
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
@@ -275,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onResume();
 
         if(PreferenceHelper.isFirstStart(this)){
-            makeWelcomedialog(false).show();
+            makeWelcomeDialog(false).show();
         }
 
         IntentFilter filter = new IntentFilter();
@@ -436,7 +439,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-    public AlertDialog.Builder makeWelcomedialog(boolean displayError){
+    public AlertDialog.Builder makeWelcomeDialog(boolean displayError){
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
@@ -464,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(!TextUtils.isEmpty(activityName.trim())){
                     int value = Integer.parseInt(activityName);
                     if(value >= Costants.MIN_WEIGHT && value > Costants.MAX_WEIGHT){
-                        makeWelcomedialog(true).show();
+                        makeWelcomeDialog(true).show();
                     }
                     else{
 
@@ -472,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     }
                 }
                 else{
-                    makeWelcomedialog(true).show();
+                    makeWelcomeDialog(true).show();
                 }
 
             }

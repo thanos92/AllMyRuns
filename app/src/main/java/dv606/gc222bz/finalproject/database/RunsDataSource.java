@@ -17,7 +17,7 @@ public class RunsDataSource {
     private String[] RunsColumns = {
             RunsDBHelper.COLUMN_ID, RunsDBHelper.COLUMN_START_DATE, RunsDBHelper.COLUMN_END_DATE
             ,RunsDBHelper.COLUMN_CALORIES_NAME,RunsDBHelper.COLUMN_SPEED_NAME, RunsDBHelper.COLUMN_DISTANCE_NAME,
-            RunsDBHelper.COLUMN_COORDINATES_NAME, RunsDBHelper.COLUMN_RUN_NAME, RunsDBHelper.COLUMN_END_DATE + " - " + RunsDBHelper.COLUMN_START_DATE +" AS DIFF"
+            RunsDBHelper.COLUMN_COORDINATES_NAME, RunsDBHelper.COLUMN_RUN_NAME, RunsDBHelper.COLUMN_END_DATE + " - " + RunsDBHelper.COLUMN_START_DATE +" AS " +RunsDBHelper.TIME_NAME
     };
 
     public static final int DATE_SORT = 1, TIME_SORT = 8, CALORIES_SORT = 3, SPEED_SORT = 4, DISTANCE_SORT = 5;
@@ -35,13 +35,12 @@ public class RunsDataSource {
     }
 
 
-    public long insertRun(long startDate, long endDate,int calories, float speed,long pause, float distance, String coordinates, String name){
+    public long insertRun(long startDate, long endDate,int calories, float speed, float distance, String coordinates, String name){
         ContentValues values = new ContentValues();
 
         values.put(RunsDBHelper.COLUMN_CALORIES_NAME, calories);
         values.put(RunsDBHelper.COLUMN_SPEED_NAME, speed);
         values.put(RunsDBHelper.COLUMN_DISTANCE_NAME, distance);
-        values.put(RunsDBHelper.COLUMN_PAUSE_TIME, pause);
         values.put(RunsDBHelper.COLUMN_COORDINATES_NAME, coordinates);
         values.put(RunsDBHelper.COLUMN_START_DATE, startDate);
         values.put(RunsDBHelper.COLUMN_END_DATE, endDate);
@@ -60,15 +59,16 @@ public class RunsDataSource {
     public List<Run> getAllRun(int orderType){
         ArrayList<Run> runs = new ArrayList<Run>();
 
-        String orderquery = null;
+        String orderQuery = null;
+
         if(orderType != 8){
-            orderquery = RunsColumns[orderType]+ " DESC";
+            orderQuery = RunsColumns[orderType]+ " DESC";
         }
         else {
-            orderquery ="DIFF DESC";
+            orderQuery =RunsDBHelper.TIME_NAME+" DESC";
         }
 
-        Cursor cursor = database.query(true, RunsDBHelper.RUNS_TABLE_NAME, RunsColumns ,null, null, null, null, orderquery, null);
+        Cursor cursor = database.query(true, RunsDBHelper.RUNS_TABLE_NAME, RunsColumns ,null, null, null, null, orderQuery, null);
 
         if(cursor != null && cursor.getCount() > 0){
             while(cursor.moveToNext()){

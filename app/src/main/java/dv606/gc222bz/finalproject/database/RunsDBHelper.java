@@ -20,9 +20,9 @@ public class RunsDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_DISTANCE_NAME = "distance";
     public static final String COLUMN_SPEED_NAME = "speed";
     public static final String COLUMN_COORDINATES_NAME = "coordinates";
-    public static final String COLUMN_PAUSE_TIME = "pause";
     public static final String COLUMN_CALORIES_NAME = "calories";
     public static final String RUN_NAME_DEFAULT_VALUE = "My run";
+    public static final String TIME_NAME = "DIFF";
 
 
     private static final String RUNS_TABLE_CREATE = "create table " +
