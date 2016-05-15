@@ -44,7 +44,7 @@ public class PositionService extends Service implements android.location.Locatio
     private RunsDataSource mRunsDataSource;
     private long mStartTime, mEndTime, mLastTime, mLastLocationMillis;
     private int mActualState = STOP_STATE;
-    private long mForegroundTime, mLastForegroundTime;
+    private long mForegroundTime, mLastForegroundTime, mLastInterval;
     private int mDistance, mConsumedCalories;
     private float mSpeed, mMediumSpeed, maxSpeed;
     private boolean isGPSFix, isWarnPlayed = true;
@@ -155,6 +155,7 @@ public class PositionService extends Service implements android.location.Locatio
                 mStartTime = System.currentTimeMillis();
                 mDistance = 0;
                 mSpeed = 0;
+                mLastInterval = 0;
                 mMediumSpeed = mSpeed;
                 maxSpeed = mSpeed;
                 mLastTime = System.currentTimeMillis();
@@ -176,6 +177,10 @@ public class PositionService extends Service implements android.location.Locatio
 
                     if(timeInSecond != 0){
 
+                        mLastInterval = mLastInterval + timeInSecond;
+
+                        mMediumSpeed = mDistance / mLastInterval;
+
                         //use space/time formula to calculate the speed
                         float calculatedSpeed = ((float)result / timeInSecond);
 
@@ -184,12 +189,12 @@ public class PositionService extends Service implements android.location.Locatio
                             maxSpeed = calculatedSpeed;
                         }
 
-                        if(mMediumSpeed != 0){
+                        /*if(mMediumSpeed != 0){
                             mMediumSpeed = (mMediumSpeed + calculatedSpeed) / 2;
                         }
                         else {
                             mMediumSpeed = calculatedSpeed;
-                        }
+                        }*/
 
                         mSpeed = calculatedSpeed;
 
@@ -362,7 +367,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     private void setGPSInterval(long gpsInitInterval) {
-        //locationManager.removeUpdates(PositionService.this);
+        locationManager.removeUpdates(PositionService.this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
                 , gpsInitInterval,
                 MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);

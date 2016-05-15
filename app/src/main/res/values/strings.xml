@@ -9,7 +9,7 @@
     <string name="start_time_extra">start_time_extra</string>
     <string name="calculated_speed_extra">calculated_speed_extra</string>
     <string name="stop_activity">stop activity</string>
-    <string name="child_speed_text">Medium speed: %s</string>
+    <string name="child_speed_text">Average speed: %s</string>
     <string name="child_distance_text">Distance traveled: %s</string>
     <string name="yes_text">Yes</string>
     <string name="settings_text">Settings</string>
@@ -19,7 +19,7 @@
     <string name="save_run_message">Do you want to save the run?</string>
     <string name="at_text">at</string>
     <string name="distance_text">Distance</string>
-    <string name="medium_speed_text">Medium speed</string>
+    <string name="medium_speed_text">Average speed</string>
     <string name="calories_text">Calories</string>
     <string name="title_activity_settings">Settings</string>
     <string name="pref_title_vibrate">Vibrate</string>
