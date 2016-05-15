@@ -216,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 makePoint(point);
             }
 
+            lastPosition = points.get(points.size() -1);
+
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(points.toArray(new LatLng[points.size()]))
                     .width(8)
@@ -389,8 +391,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         isRunning = false;
 
         if(mPositionServiceBinder != null
-                && (mPositionServiceBinder.getState() != PositionService.START_STATE
-                || mPositionServiceBinder.getState() != PositionService.READY_STATE)){
+                && (mPositionServiceBinder.getState() == PositionService.START_STATE
+                || mPositionServiceBinder.getState() == PositionService.READY_STATE)){
             
             mPositionServiceBinder.makeForeground(mLastTimer);
         }
