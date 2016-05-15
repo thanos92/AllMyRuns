@@ -100,7 +100,7 @@ public class PositionService extends Service implements android.location.Locatio
     @Override
     public boolean onUnbind(Intent intent){
 
-        if(mActualState != START_STATE){
+        if(mActualState != START_STATE  && mActualState != READY_STATE){
             stopSelf();
         }
 
@@ -117,6 +117,7 @@ public class PositionService extends Service implements android.location.Locatio
             player = null;
         }
 
+        locationManager.removeUpdates(this);
         prefs.unregisterOnSharedPreferenceChangeListener(this);
         mRunsDataSource.close();
     }
@@ -128,6 +129,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         mLastLocation = location;
         mLastLocationMillis = SystemClock.elapsedRealtime();
+        
 
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
@@ -143,10 +145,7 @@ public class PositionService extends Service implements android.location.Locatio
 
                 changeState(START_STATE);
 
-                locationManager.removeUpdates(PositionService.this);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                        , mGpsUpdateInterval,
-                        MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
+                setGPSInterval(mGpsUpdateInterval);
 
                 if(PreferenceHelper.getIsAudioEnabled(this)){
                     player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
@@ -359,14 +358,20 @@ public class PositionService extends Service implements android.location.Locatio
     {
         changeState(READY_STATE);
 
-        locationManager.removeUpdates(PositionService.this);
+        setGPSInterval(Costants.GPS_INIT_INTERVAL);
+    }
+
+    private void setGPSInterval(long gpsInitInterval) {
+        //locationManager.removeUpdates(PositionService.this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                , Costants.GPS_INIT_INTERVAL,
+                , gpsInitInterval,
                 MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
     }
 
     public void stopPositionService(boolean saveData){
         mEndTime = System.currentTimeMillis();
+
+        setGPSInterval(Costants.GPS_START_INTERVAL);
 
         if(saveData){
             changeState(AWAIT_SAVE_STATE);

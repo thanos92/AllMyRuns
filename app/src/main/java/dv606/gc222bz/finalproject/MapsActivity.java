@@ -2,6 +2,7 @@ package dv606.gc222bz.finalproject;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.location.Location;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
@@ -16,6 +17,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.List;
 
@@ -33,10 +36,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+
 
         Intent intent = getIntent();
 
@@ -45,6 +45,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         run = runsDataSource.getRunById(intent.getLongExtra(getString(R.string.run_id_extra), 0));
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(mMap == null){
+            SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
+        }
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+    }
 
     /**
      * Manipulates the map once available.
@@ -64,10 +76,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onMapLoaded() {
                 List<LatLng> coordinatesList = Utilities.stringToCoordinatesList(run.getCoordinates());
 
+                LatLng lastPosition = null;
+
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
                 for (LatLng position : coordinatesList) {
-                    mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.RED).fillColor(Color.RED).center(position));
+                    if(lastPosition != null){
+                        float degree = (float)Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(getString(R.string.start_title_text)));
+                        mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).rotation(degree));
+                    }
+
+                    //mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.BLUE).fillColor(Color.BLUE).center(position));
                     builder.include(position);
+
+                    Polyline line = mMap.addPolyline(new PolylineOptions()
+                            .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
+                            .width(8)
+                            .color(Color.RED));
+
+                    lastPosition = position;
+
                 }
                 LatLngBounds bounds = builder.build();
 
@@ -83,4 +110,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+
 }

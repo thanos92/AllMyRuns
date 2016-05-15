@@ -33,6 +33,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.List;
 
@@ -76,12 +78,23 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             int state = mPositionServiceBinder.getState();
 
             if( state == PositionService.START_STATE){
+
+                if(progressDialog != null && progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+
                 isRunning = true;
                 new Thread(new TimerTask(mPositionServiceBinder.getmForegroundTime())).start();
                 setIndicator(mPositionServiceBinder.getmDistance(), mPositionServiceBinder.getmMediumSpeed(), mPositionServiceBinder.getmConsumedCalories());
                 mStopButton.setVisibility(View.VISIBLE);
                 mStartButton.setVisibility(View.INVISIBLE);
                 setEnabledOptionMenu(false);
+            }
+            else if(mPositionServiceBinder.getState() == PositionService.READY_STATE){
+
+                if(progressDialog != null && !progressDialog.isShowing()){
+                    progressDialog.show();
+                }
             }
             else if(awaitStarting){ //is true when onActivityResult is called
                 awaitStarting = false;
@@ -107,6 +120,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mDistanceText = (TextView) findViewById(R.id.distance_text);
         mSpeedText = (TextView) findViewById(R.id.cal_speed);
         mCaloriesText = (TextView) findViewById(R.id.calories_text);
+
+        progressDialog = new ProgressDialog(MainActivity.this);
+        progressDialog.setMessage(getString(R.string.gps_progress_message));
+        progressDialog.setCancelable(false);
+        progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel_message), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mPositionServiceBinder.stopPositionService(false);
+                resetAll();
+            }
+        });
 
         mStartButton = (Button) findViewById(R.id.start_button);
         mStartButton.setOnClickListener(new View.OnClickListener() {
@@ -147,17 +171,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //if the gps is enabled start the service otherwise display a dialog
         if(Utilities.isGpsEnabled(MainActivity.this)){
 
-            progressDialog = new ProgressDialog(MainActivity.this);
-            progressDialog.setMessage(getString(R.string.gps_progress_message));
-            progressDialog.setCancelable(false);
-            progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel_message), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mPositionServiceBinder.stopPositionService(false);
-                    resetAll();
-                }
-            });
-
             progressDialog.show();
             mPositionServiceBinder.startPositionService();
         }
@@ -197,13 +210,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private void resumeMap(List<LatLng> points){
 
-        if(mMap != null){
+        if(mMap != null && points.size()  > 0){
             mMap.clear();
             for(LatLng point : points){
                 makePoint(point);
             }
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(points.size() - 1 ), 20));
+            Polyline line = mMap.addPolyline(new PolylineOptions()
+                    .add(points.toArray(new LatLng[points.size()]))
+                    .width(8)
+                    .color(Color.RED));
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(points.get(points.size() - 1 ), Costants.MAP_CAMERA_ZOOM_FACTOR));
         }
     }
 
@@ -255,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void makePoint(LatLng position) {
-        mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.RED).fillColor(Color.RED).center(position));
+        mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.BLUE).fillColor(Color.BLUE).center(position));
     }
 
     private void setEnabledOptionMenu(boolean isEnabled){
@@ -323,8 +341,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     if(mMap != null && PreferenceHelper.getCameraAutoEnabled(MainActivity.this)){
 
+                        if(lastPosition != null){
+                            Polyline line = mMap.addPolyline(new PolylineOptions()
+                                    .add(lastPosition, position)
+                                    .width(8)
+                                    .color(Color.RED));
+                        }
+
+                        lastPosition = position;
+
                         makePoint(position);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 20));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, Costants.MAP_CAMERA_ZOOM_FACTOR));
                     }
 
                 }
@@ -361,7 +388,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         isRunning = false;
 
-        if(mPositionServiceBinder != null && mPositionServiceBinder.getState() == PositionService.START_STATE){
+        if(mPositionServiceBinder != null
+                && (mPositionServiceBinder.getState() != PositionService.START_STATE
+                || mPositionServiceBinder.getState() != PositionService.READY_STATE)){
             
             mPositionServiceBinder.makeForeground(mLastTimer);
         }

@@ -9,4 +9,5 @@ public class Costants {
     public static String TIMER_ZERO_VALUE = "00:00:00";
     public static long GPS_START_INTERVAL = 20000;
     public static long GPS_INIT_INTERVAL = 5000;
+    public static int MAP_CAMERA_ZOOM_FACTOR = 18;
 }
