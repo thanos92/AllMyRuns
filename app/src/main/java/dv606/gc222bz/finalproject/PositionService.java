@@ -78,8 +78,10 @@ public class PositionService extends Service implements android.location.Locatio
 
         Toast.makeText(this,""+mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
 
+        //initialize location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        //request location update with medium time to allow the gps to fix to satellites
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
                 , Costants.GPS_START_INTERVAL,
                 MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
@@ -87,7 +89,6 @@ public class PositionService extends Service implements android.location.Locatio
         locationManager.addGpsStatusListener(this);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-
 
         prefs.registerOnSharedPreferenceChangeListener(this);
     }
@@ -100,6 +101,7 @@ public class PositionService extends Service implements android.location.Locatio
     @Override
     public boolean onUnbind(Intent intent){
 
+        //if the service is idle terminate it
         if(mActualState != START_STATE  && mActualState != READY_STATE){
             stopSelf();
         }
@@ -111,6 +113,7 @@ public class PositionService extends Service implements android.location.Locatio
     @Override
     public void onDestroy(){
 
+        //clear the resources
         if(player != null){
             player.reset();
             player.release();
@@ -133,6 +136,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
+        //allow only the position with the specified accuracy
         if(location != null && location.hasAccuracy() && location.getAccuracy() <= 20 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
 
             double latitude = location.getLatitude();
@@ -140,7 +144,7 @@ public class PositionService extends Service implements android.location.Locatio
 
             collectedPoints.add(new LatLng(latitude,longitude));
 
-
+            //first position with the given precision
             if(mActualState == READY_STATE){
 
                 changeState(START_STATE);
@@ -246,7 +250,6 @@ public class PositionService extends Service implements android.location.Locatio
                 break;
             case GpsStatus.GPS_EVENT_FIRST_FIX:
 
-
                 isGPSFix = true;
 
                 break;
@@ -344,6 +347,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     public void playEnabledGpsSound(){
+        //play sound only when the location service is running and no other audio is playing
         if(isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
             player.start();
@@ -351,7 +355,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     public void playDisabledGpsSound(){
-
+        //play sound only when the location service is running and no other audio is playing
         if(!isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
             player.start();
@@ -362,7 +366,6 @@ public class PositionService extends Service implements android.location.Locatio
     public void startPositionService()
     {
         changeState(READY_STATE);
-
         setGPSInterval(Costants.GPS_INIT_INTERVAL);
     }
 
@@ -400,6 +403,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     public void resetField(){
+        //reset all field
         mConsumedCalories = 0;
         mStartTime = 0;
         mEndTime = 0;
@@ -426,9 +430,11 @@ public class PositionService extends Service implements android.location.Locatio
 
     public void makeForeground(long foregroundTime){
 
+        //save the time when the bound activity is suspended
         this.mForegroundTime = foregroundTime;
         mLastForegroundTime = System.currentTimeMillis();
 
+        //build the notification
         Notification.Builder notificationBuilder= new Notification.Builder(getApplicationContext());
         notificationBuilder.setSmallIcon(R.drawable.ic_notification_icon);
         notificationBuilder.setContentTitle(getString(R.string.notification_title_text));
