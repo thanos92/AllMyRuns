@@ -179,7 +179,7 @@ public class PositionService extends Service implements android.location.Locatio
 
                         mLastInterval = mLastInterval + timeInSecond;
 
-                        mMediumSpeed = mDistance / mLastInterval;
+                        mMediumSpeed = ((float)mDistance / (float)mLastInterval);
 
                         //use space/time formula to calculate the speed
                         float calculatedSpeed = ((float)result / timeInSecond);
