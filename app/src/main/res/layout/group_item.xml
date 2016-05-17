@@ -50,7 +50,7 @@
             android:layout_below="@id/map_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="See the track"/>
+            android:text="@string/map_button_label"/>
 
 
     </RelativeLayout>

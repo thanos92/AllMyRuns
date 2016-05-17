@@ -58,9 +58,11 @@
     <string name="notification_title_text">All my runs in execution</string>
     <string name="prefs_audio_enable">prefs_audio_enabled</string>
     <string name="enable_audio">Enable audio</string>
+    <string name="prefs_direction">prefs_direction</string>
+    <string name="prefs_mapTitle">prefs_title</string>
+    <string name="map_button_label">See the route</string>
 
     <string-array name="gps_frequency_text">
-        <item>5 seconds</item>
         <item>10 seconds</item>
         <item>20 seconds</item>
         <item>40 seconds</item>

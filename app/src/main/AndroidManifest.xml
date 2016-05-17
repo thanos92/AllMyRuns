@@ -39,7 +39,8 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" />
+            android:label="@string/title_activity_maps"
+            android:parentActivityName=".HistoryActivity"/>
         <activity
             android:name=".HistoryActivity"
             android:parentActivityName=".MainActivity"

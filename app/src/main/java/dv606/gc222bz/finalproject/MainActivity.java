@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Menu mMenu;
 
 
-    private LatLng lastPosition = null;
+    private LatLng mLastPosition = null;
     private long mLastTimer;
 
     private ProgressDialog progressDialog;
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
 
-               resetAll();
+                resetAll();
                 setEnabledOptionMenu(true);
 
                 mPositionServiceBinder.stopPositionService(true);
@@ -186,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mStartButton.setVisibility(View.VISIBLE);
         mStopButton.setVisibility(View.INVISIBLE);
+        mLastPosition = null;
 
         if(mMap != null){
             mMap.clear();
@@ -216,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 makePoint(point);
             }
 
-            lastPosition = points.get(points.size() -1);
+            mLastPosition = points.get(points.size() -1);
 
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(points.toArray(new LatLng[points.size()]))
@@ -343,14 +344,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     if(mMap != null && PreferenceHelper.getCameraAutoEnabled(MainActivity.this)){
 
-                        if(lastPosition != null){
+                        if(mLastPosition != null){
                             Polyline line = mMap.addPolyline(new PolylineOptions()
-                                    .add(lastPosition, position)
+                                    .add(mLastPosition, position)
                                     .width(8)
                                     .color(Color.RED));
                         }
 
-                        lastPosition = position;
+                        mLastPosition = position;
 
                         makePoint(position);
                         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, Costants.MAP_CAMERA_ZOOM_FACTOR));

@@ -149,7 +149,9 @@ public class PositionService extends Service implements android.location.Locatio
 
                 changeState(START_STATE);
 
-                setGPSInterval(mGpsUpdateInterval);
+                if(Costants.GPS_INIT_INTERVAL != mGpsUpdateInterval) {
+                    setGPSInterval(mGpsUpdateInterval);
+                }
 
                 if(PreferenceHelper.getIsAudioEnabled(this)){
                     player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
@@ -370,10 +372,13 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     private void setGPSInterval(long gpsInitInterval) {
-        locationManager.removeUpdates(PositionService.this);
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                , gpsInitInterval,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
+
+
+            locationManager.removeUpdates(PositionService.this);
+
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
+                    , gpsInitInterval,
+                    MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
     }
 
     public void stopPositionService(boolean saveData){

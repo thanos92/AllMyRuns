@@ -115,4 +115,17 @@ public class PreferenceHelper {
         prefEditor.apply();
     }
 
+    public static boolean getDisplayDirection(Context context){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        boolean isAudioEnabled = prefs.getBoolean(context.getString(R.string.prefs_direction), false);
+        return isAudioEnabled;
+    }
+
+    public static void setDisplayDirection(Context context, boolean isAudioEnabled){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefEditor = prefs.edit();
+        prefEditor.putBoolean(context.getString(R.string.prefs_direction), isAudioEnabled);
+        prefEditor.apply();
+    }
+
 }
