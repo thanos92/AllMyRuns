@@ -511,6 +511,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     else{
 
                         PreferenceHelper.setWeightPrefs(MainActivity.this, activityName);
+                        PreferenceHelper.setFirstStart(MainActivity.this, false);
                     }
                 }
                 else{

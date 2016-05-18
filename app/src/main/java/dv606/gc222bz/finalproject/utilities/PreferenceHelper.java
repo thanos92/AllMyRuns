@@ -20,14 +20,14 @@ public class PreferenceHelper {
     public static boolean isFirstStart(Context context){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         boolean isFirstStart = prefs.getBoolean(PREFS_FIRST_START, true);
-
-        if(isFirstStart){
-            SharedPreferences.Editor prefEditor = prefs.edit();
-            prefEditor.putBoolean(PREFS_FIRST_START, false);
-            prefEditor.apply();
-        }
-
         return isFirstStart;
+    }
+
+    public static void setFirstStart(Context context, Boolean isFirstStart){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefEditor = prefs.edit();
+        prefEditor.putBoolean(PREFS_WEIGHT, isFirstStart);
+        prefEditor.apply();
     }
 
     public static void setWeightPrefs(Context context, String weight){
@@ -39,7 +39,7 @@ public class PreferenceHelper {
 
     public static String getWeightPrefs(Context context){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(PREFS_WEIGHT, "");
+        return prefs.getString(PREFS_WEIGHT, "50");
     }
 
     public static String getSpeedWithUnit(Context context, float speed){
