@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.List;
 
+import dv606.gc222bz.finalproject.database.RunDetails;
 import dv606.gc222bz.finalproject.database.RunsDataSource;
 import dv606.gc222bz.finalproject.utilities.Costants;
 import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
@@ -57,6 +59,7 @@ public class PositionService extends Service implements android.location.Locatio
     private LocationManager locationManager;
 
     private ArrayList<LatLng> collectedPoints = new ArrayList<>();
+    private ArrayList<RunDetails> runDetailsList = new ArrayList<>();
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
 
     //endregion
@@ -144,6 +147,8 @@ public class PositionService extends Service implements android.location.Locatio
 
             collectedPoints.add(new LatLng(latitude,longitude));
 
+            RunDetails runDetails = new RunDetails();
+
             //first position with the given precision
             if(mActualState == READY_STATE){
 
@@ -211,9 +216,18 @@ public class PositionService extends Service implements android.location.Locatio
                 }
             }
 
+
+
             int weight = Integer.parseInt(PreferenceHelper.getWeightPrefs(PositionService.this));
             mConsumedCalories = Utilities.calculateCalories(weight, mDistance);
             sendPositionBroadcast(mDistance, mConsumedCalories, mMediumSpeed, latitude, longitude);
+
+            runDetails.setDistance(mDistance);
+            runDetails.setCalories(mConsumedCalories);
+            runDetails.setSpeed(mMediumSpeed);
+            runDetails.setTime(System.currentTimeMillis());
+            runDetails.setCoordinates(Utilities.coordinatesToString(latitude, longitude));
+            runDetailsList.add(runDetails);
         }
     }
 
@@ -400,7 +414,11 @@ public class PositionService extends Service implements android.location.Locatio
         changeState(STOP_STATE);
 
         if(saveData){
-            mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mSpeed, mDistance, Utilities.coordinatesToString(collectedPoints), name);
+            long runId = mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mSpeed, mDistance, Utilities.coordinatesToString(collectedPoints), name);
+            for(RunDetails runDetails : runDetailsList){
+                runDetails.setRunId(runId);
+            }
+            mRunsDataSource.insertRunDetailsList(runDetailsList);
         }
 
         resetField();
@@ -414,6 +432,7 @@ public class PositionService extends Service implements android.location.Locatio
         mEndTime = 0;
         mLastTime = 0;
         collectedPoints.clear();
+        runDetailsList.clear();
         mLastPreciseLocation = null;
         mDistance = 0; mSpeed = 0; maxSpeed = 0; mMediumSpeed = 0;
         mForegroundTime = 0;

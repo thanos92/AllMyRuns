@@ -2,10 +2,15 @@ package dv606.gc222bz.finalproject;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -20,9 +25,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import dv606.gc222bz.finalproject.database.Run;
+import dv606.gc222bz.finalproject.database.RunDetails;
 import dv606.gc222bz.finalproject.database.RunsDataSource;
 import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
 import dv606.gc222bz.finalproject.utilities.Utilities;
@@ -31,8 +38,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
     private Run run;
+    private long startTime;
     private RunsDataSource runsDataSource;
-    List<LatLng> coordinatesList;
+    ArrayList<RunDetails> runDetails = new ArrayList<>();
+    ArrayList<LatLng> coordinatesList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +59,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         runsDataSource.open();
         run = runsDataSource.getRunById(intent.getLongExtra(getString(R.string.run_id_extra), 0));
 
-        coordinatesList = Utilities.stringToCoordinatesList(run.getCoordinates());
+        //coordinatesList = Utilities.stringToCoordinatesList(run.getCoordinates());
+
+        runDetails = runsDataSource.getRunDetails((intent.getLongExtra(getString(R.string.run_id_extra), 0)));
+        startTime = intent.getLongExtra(getString(R.string.prefs_start_time), 0);
+
+        for(RunDetails runDetail : runDetails){
+            coordinatesList.add(Utilities.stringToLatLng(runDetail.getCoordinates()));
+        }
+
+
     }
 
     @Override
@@ -91,15 +109,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -108,39 +117,81 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onMapLoaded() {
 
+                if(runDetails.size() > 0){
+
                 LatLngBounds.Builder builder = new LatLngBounds.Builder();
                 for (LatLng position : coordinatesList) {
 
                     builder.include(position);
                 }
 
+                    LatLngBounds bounds = builder.build();
 
-                LatLngBounds bounds = builder.build();
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 100);
 
-                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 100);
-
-                makeRouteMarker(PreferenceHelper.getDisplayDirection(MapsActivity.this));
+                    makeRouteMarker(PreferenceHelper.getDisplayDirection(MapsActivity.this));
 
 
-                mMap.animateCamera(cu);
+                    mMap.animateCamera(cu);
+
+                    mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                        @Override
+                        public View getInfoWindow(Marker arg0) {
+                            return null;
+                        }
+
+                        @Override
+                        public View getInfoContents(Marker marker) {
+
+                            LinearLayout info = new LinearLayout(MapsActivity.this);
+                            info.setOrientation(LinearLayout.VERTICAL);
+
+                            TextView title = new TextView(MapsActivity.this);
+                            title.setTextColor(Color.BLACK);
+                            title.setGravity(Gravity.CENTER);
+                            title.setTypeface(null, Typeface.BOLD);
+                            title.setText(marker.getTitle());
+
+                            TextView snippet = new TextView(MapsActivity.this);
+                            snippet.setTextColor(Color.GRAY);
+                            snippet.setText(marker.getSnippet());
+
+                            info.addView(title);
+                            info.addView(snippet);
+
+                            return info;
+                        }
+                    });
+                }
+
+
             }
         });
     }
 
-    private void makeRouteMarker(boolean isDirectionDisplayed){
+    private void makeRouteMarker(boolean isDirectionDisplayed) {
 
         LatLng lastPosition = null;
 
-        for (LatLng position : coordinatesList) {
+        for (int i = 0; i < runDetails.size() ; i++) {
 
-            if (lastPosition != null && isDirectionDisplayed) {
-                float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
-                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(getString(R.string.start_title_text)));
-                mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).rotation(degree));
+            RunDetails runDetail = runDetails.get(i);
+
+            LatLng position = Utilities.stringToLatLng(runDetail.getCoordinates());
+
+            long runTime = runDetail.getTime();
+            String timeDiff = Utilities.formatLongToTimer(runTime - startTime);
+
+            if(i != 0 && i != runDetails.size() - 1){
+
+                if (lastPosition != null && isDirectionDisplayed) {
+                    float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
+                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnipped(runDetail)).rotation(degree));
+                } else {
+                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnipped(runDetail)));
+                }
             }
-            /*else{
-                mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.BLUE).fillColor(Color.BLUE).center(position));
-            }*/
 
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
@@ -149,14 +200,19 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             lastPosition = position;
 
-            if(coordinatesList.size() > 1){
+            if (coordinatesList.size() > 1) {
 
-                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(getString(R.string.start_title_text)));
-                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(getString(R.string.end_title_text)));
+                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(timeDiff).snippet(makeSnipped(runDetail)));
+                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(timeDiff).snippet(makeSnipped(runDetail)));
             }
-        }
 
+
+        }
     }
 
+    public String makeSnipped (RunDetails runDetails){
+
+        return String.format(getString(R.string.marker_snippet), PreferenceHelper.getDistanceWithUnit(MapsActivity.this, (int)runDetails.getDistance()), PreferenceHelper.getSpeedWithUnit(MapsActivity.this,runDetails.getSpeed()), PreferenceHelper.getCaloriesWithUnit(MapsActivity.this,runDetails.getCalories() ));
+    }
 
 }

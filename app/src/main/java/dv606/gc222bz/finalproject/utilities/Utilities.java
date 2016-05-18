@@ -32,6 +32,10 @@ public class Utilities {
         return latLng1;
     }
 
+    public static String coordinatesToString(Double latitude, Double longitude){
+        return latitude + "," + longitude;
+    }
+
     public static String coordinatesToString(List<LatLng> coordinatesList){
 
         String result ="";

@@ -132,6 +132,7 @@ public class HistoryExpandableList extends BaseExpandableListAdapter {
                 Intent intent = new Intent(context, MapsActivity.class);
                 intent.putExtra(context.getString(R.string.run_id_extra), child.getId());
                 intent.putExtra(context.getString(R.string.prefs_mapTitle), child.getName());
+                intent.putExtra(context.getString(R.string.prefs_start_time), child.getStartDate());
                 context.startActivity(intent);
             }
         });

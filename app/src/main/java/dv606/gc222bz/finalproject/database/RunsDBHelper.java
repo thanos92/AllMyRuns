@@ -13,6 +13,7 @@ public class RunsDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_ID ="_id";
 
     public static final String RUNS_TABLE_NAME ="my_runs";
+    public static final String RUNS_DETAILS_TABLE_NAME ="my_runs_details";
 
     public static final String COLUMN_START_DATE ="start_date";
     public static final String COLUMN_END_DATE = "end_date";
@@ -22,6 +23,8 @@ public class RunsDBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_COORDINATES_NAME = "coordinates";
     public static final String COLUMN_CALORIES_NAME = "calories";
     public static final String RUN_NAME_DEFAULT_VALUE = "My run";
+    public static final String TIME_DETAILS_NAME = "time";
+    public static final String ID_RUN_DETAILS_NAME = "id_run";
     public static final String TIME_NAME = "DIFF";
 
 
@@ -35,6 +38,16 @@ public class RunsDBHelper extends SQLiteOpenHelper {
             COLUMN_START_DATE + " integer, " +
             COLUMN_END_DATE + " integer )";
 
+    private static final String RUNS_DETAILS_TABLE_CREATE = "create table " +
+            RUNS_DETAILS_TABLE_NAME
+            + " ("+ COLUMN_ID + " integer primary key autoincrement, "+
+            COLUMN_DISTANCE_NAME + " integer, "+
+            ID_RUN_DETAILS_NAME + " integer, "+
+            COLUMN_COORDINATES_NAME + " text, " +
+            COLUMN_CALORIES_NAME + " integer, "+
+            COLUMN_SPEED_NAME + " real, "+
+            TIME_DETAILS_NAME + " integer )";
+
 
     public RunsDBHelper(Context context){
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -43,11 +56,13 @@ public class RunsDBHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         sqLiteDatabase.execSQL(RUNS_TABLE_CREATE);
+        sqLiteDatabase.execSQL(RUNS_DETAILS_TABLE_CREATE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RUNS_TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + RUNS_DETAILS_TABLE_CREATE);
         onCreate(sqLiteDatabase);
     }
 }

@@ -20,6 +20,11 @@ public class RunsDataSource {
             RunsDBHelper.COLUMN_COORDINATES_NAME, RunsDBHelper.COLUMN_RUN_NAME, RunsDBHelper.COLUMN_END_DATE + " - " + RunsDBHelper.COLUMN_START_DATE +" AS " +RunsDBHelper.TIME_NAME
     };
 
+    private String[] RunsDetailsColumns = {
+            RunsDBHelper.COLUMN_ID, RunsDBHelper.ID_RUN_DETAILS_NAME, RunsDBHelper.TIME_DETAILS_NAME
+            ,RunsDBHelper.COLUMN_CALORIES_NAME,RunsDBHelper.COLUMN_SPEED_NAME, RunsDBHelper.COLUMN_DISTANCE_NAME,
+            RunsDBHelper.COLUMN_COORDINATES_NAME    };
+
     public static final int DATE_SORT = 1, TIME_SORT = 8, CALORIES_SORT = 3, SPEED_SORT = 4, DISTANCE_SORT = 5;
 
     public RunsDataSource(Context context){
@@ -45,7 +50,6 @@ public class RunsDataSource {
         values.put(RunsDBHelper.COLUMN_START_DATE, startDate);
         values.put(RunsDBHelper.COLUMN_END_DATE, endDate);
 
-        System.out.println(name);
 
         if (name != null){
             values.put(RunsDBHelper.COLUMN_RUN_NAME, name);
@@ -53,6 +57,39 @@ public class RunsDataSource {
 
         long insertId = database.insert(RunsDBHelper.RUNS_TABLE_NAME, null, values);
         return insertId;
+    }
+
+    public long insertRunDetail(long runId, long detailTime,int calories, float speed, float distance, String coordinates ){
+        ContentValues values = new ContentValues();
+        values.put(RunsDBHelper.COLUMN_CALORIES_NAME, calories);
+        values.put(RunsDBHelper.COLUMN_SPEED_NAME, speed);
+        values.put(RunsDBHelper.COLUMN_DISTANCE_NAME, distance);
+        values.put(RunsDBHelper.COLUMN_COORDINATES_NAME, coordinates);
+        values.put(RunsDBHelper.TIME_DETAILS_NAME, detailTime);
+        values.put(RunsDBHelper.ID_RUN_DETAILS_NAME, runId);
+
+        long insertId = database.insert(RunsDBHelper.RUNS_DETAILS_TABLE_NAME, null, values);
+        return insertId;
+    }
+
+    public void insertRunDetailsList(List<RunDetails> runDetails){
+        for(RunDetails runDetail : runDetails){
+            insertRunDetail(runDetail.getRunId(), runDetail.getTime(), runDetail.getCalories(), runDetail.getSpeed(), runDetail.getDistance(), runDetail.getCoordinates());
+        }
+    }
+
+    public ArrayList<RunDetails> getRunDetails(long runId){
+        ArrayList<RunDetails> runDetails = new ArrayList<>();
+        Cursor cursor = database.query(true, RunsDBHelper.RUNS_DETAILS_TABLE_NAME, RunsDetailsColumns,RunsDBHelper.ID_RUN_DETAILS_NAME + "=" + runId, null, null, null,null, null);
+
+
+        if(cursor != null && cursor.getCount() > 0){
+            while(cursor.moveToNext()){
+                runDetails.add(cursorToRunDetails(cursor));
+            }
+        }
+
+        return runDetails;
     }
 
 
@@ -93,6 +130,7 @@ public class RunsDataSource {
     }
 
     public boolean deleteRun(long _id){
+        database.delete(RunsDBHelper.RUNS_DETAILS_TABLE_NAME, RunsDBHelper.ID_RUN_DETAILS_NAME + "=" + _id, null);
         return database.delete(RunsDBHelper.RUNS_TABLE_NAME, RunsDBHelper.COLUMN_ID + "=" + _id, null) > 0;
     }
 
@@ -109,6 +147,19 @@ public class RunsDataSource {
         run.setCoordinates(cursor.getString(6));
         run.setName(cursor.getString(7));
         run.setTime(cursor.getLong(8));
+        return  run;
+    }
+
+
+    public RunDetails cursorToRunDetails(Cursor cursor){
+        RunDetails run = new RunDetails();
+        run.setId(cursor.getLong(0));
+        run.setRunId(cursor.getLong(1));
+        run.setTime(cursor.getLong(2));
+        run.setCalories(cursor.getInt(3));
+        run.setSpeed(cursor.getFloat(4));
+        run.setDistance(cursor.getFloat(5));
+        run.setCoordinates(cursor.getString(6));
         return  run;
     }
 
