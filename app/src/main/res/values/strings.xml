@@ -61,7 +61,7 @@
     <string name="prefs_direction">prefs_direction</string>
     <string name="prefs_mapTitle">prefs_title</string>
     <string name="map_button_label">See the route</string>
-    <string name="marker_snippet">Distance: %1$s \nAverage Speed: %2$s \nBurned Calories: %3$s,  </string>
+    <string name="marker_snippet">Distance: %1$s \nAverage Speed: %2$s \nBurned Calories: %3$s</string>
     <string name="prefs_start_time">prefs_start_time</string>
 
     <string-array name="gps_frequency_text">

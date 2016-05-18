@@ -26,7 +26,6 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import dv606.gc222bz.finalproject.database.Run;
 import dv606.gc222bz.finalproject.database.RunDetails;
@@ -183,35 +182,35 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             long runTime = runDetail.getTime();
             String timeDiff = Utilities.formatLongToTimer(runTime - startTime);
 
-            if(i != 0 && i != runDetails.size() - 1){
+            if (i != 0 && i != runDetails.size() - 1) {
 
                 if (lastPosition != null && isDirectionDisplayed) {
                     float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
-                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnipped(runDetail)).rotation(degree));
+                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)).rotation(degree));
                 } else {
-                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnipped(runDetail)));
+                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)));
                 }
             }
 
+            lastPosition = position;
+        }
 
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
                     .width(8)
                     .color(Color.RED));
 
-            lastPosition = position;
+
 
             if (coordinatesList.size() > 1) {
 
-                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(timeDiff).snippet(makeSnipped(runDetail)));
-                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(timeDiff).snippet(makeSnipped(runDetail)));
+                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(Utilities.formatLongToTimer(runDetails.get(0).getTime() - startTime)).snippet(makeSnippet(runDetails.get(0))));
+                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(Utilities.formatLongToTimer(runDetails.get(runDetails.size() - 1).getTime() - startTime)).snippet(makeSnippet(runDetails.get(runDetails.size() - 1))));
             }
 
-
-        }
     }
 
-    public String makeSnipped (RunDetails runDetails){
+    public String makeSnippet(RunDetails runDetails){
 
         return String.format(getString(R.string.marker_snippet), PreferenceHelper.getDistanceWithUnit(MapsActivity.this, (int)runDetails.getDistance()), PreferenceHelper.getSpeedWithUnit(MapsActivity.this,runDetails.getSpeed()), PreferenceHelper.getCaloriesWithUnit(MapsActivity.this,runDetails.getCalories() ));
     }
