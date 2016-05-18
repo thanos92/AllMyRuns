@@ -193,6 +193,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             }
 
+
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
                     .width(8)

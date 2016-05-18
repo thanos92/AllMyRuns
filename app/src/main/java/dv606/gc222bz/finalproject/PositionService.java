@@ -105,7 +105,7 @@ public class PositionService extends Service implements android.location.Locatio
     public boolean onUnbind(Intent intent){
 
         //if the service is idle terminate it
-        if(mActualState != START_STATE  && mActualState != READY_STATE){
+        if(mActualState == STOP_STATE){
             stopSelf();
         }
 
@@ -388,7 +388,7 @@ public class PositionService extends Service implements android.location.Locatio
     private void setGPSInterval(long gpsInitInterval) {
 
 
-            locationManager.removeUpdates(PositionService.this);
+            //locationManager.removeUpdates(PositionService.this);
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
                     , gpsInitInterval,

@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private long mLastTimer;
 
     private ProgressDialog progressDialog;
-    private AlertDialog.Builder confirmDialog;
+    private AlertDialog confirmDialog;
     private boolean awaitStarting = false;
 
 
@@ -94,6 +94,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 if(progressDialog != null && !progressDialog.isShowing()){
                     progressDialog.show();
+                }
+            }
+            else if(mPositionServiceBinder.getState() == PositionService.AWAIT_SAVE_STATE){
+                if(confirmDialog == null || !confirmDialog.isShowing()){
+                    confirmDialog = makeConfirmDialog().show();
                 }
             }
             else if(awaitStarting){ //is true when onActivityResult is called
@@ -152,8 +157,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 mPositionServiceBinder.stopPositionService(true);
 
-                confirmDialog = makeConfirmDialog();
-                confirmDialog.show();
+                confirmDialog = makeConfirmDialog().show();
 
 
 
@@ -342,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                      LatLng position = new LatLng(lat, lon);
 
-                    if(mMap != null && PreferenceHelper.getCameraAutoEnabled(MainActivity.this)){
+                    if(mMap != null){
 
                         if(mLastPosition != null){
                             Polyline line = mMap.addPolyline(new PolylineOptions()
@@ -354,7 +358,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         mLastPosition = position;
 
                         makePoint(position);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, Costants.MAP_CAMERA_ZOOM_FACTOR));
+
+                        if(PreferenceHelper.getCameraAutoEnabled(MainActivity.this)) {
+                            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(position, Costants.MAP_CAMERA_ZOOM_FACTOR));
+                        }
                     }
 
                 }
@@ -391,10 +398,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         isRunning = false;
 
-        if(mPositionServiceBinder != null
-                && (mPositionServiceBinder.getState() == PositionService.START_STATE
-                || mPositionServiceBinder.getState() == PositionService.READY_STATE)){
-            
+        if(mPositionServiceBinder != null && (mPositionServiceBinder.getState() != PositionService.STOP_STATE)){
             mPositionServiceBinder.makeForeground(mLastTimer);
         }
 
@@ -419,6 +423,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public AlertDialog.Builder makeConfirmDialog(){
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setCancelable(false);
 
         final EditText edittext = new EditText(this);
         InputFilter[] FilterArray = new InputFilter[1];
@@ -475,6 +480,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public AlertDialog.Builder makeWelcomeDialog(boolean displayError){
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setCancelable(false);
 
         final EditText edittext = new EditText(this);
         edittext.setInputType(InputType.TYPE_CLASS_NUMBER);
