@@ -426,6 +426,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     public void resetField(){
+
         //reset all field
         mConsumedCalories = 0;
         mStartTime = 0;
