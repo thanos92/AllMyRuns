@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        if(mPositionServiceBinder != null){
+        if(mPositionServiceBinder != null && mPositionServiceBinder.getState() != PositionService.AWAIT_SAVE_STATE){
           resumeMap( mPositionServiceBinder.getCollectedPoints());
         }
 

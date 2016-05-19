@@ -414,7 +414,7 @@ public class PositionService extends Service implements android.location.Locatio
         changeState(STOP_STATE);
 
         if(saveData){
-            long runId = mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mSpeed, mDistance, Utilities.coordinatesToString(collectedPoints), name);
+            long runId = mRunsDataSource.insertRun(mStartTime, mEndTime, mConsumedCalories, mMediumSpeed, mDistance, Utilities.coordinatesToString(collectedPoints), name);
             for(RunDetails runDetails : runDetailsList){
                 runDetails.setRunId(runId);
             }
