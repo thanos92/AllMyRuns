@@ -179,16 +179,23 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             LatLng position = Utilities.stringToLatLng(runDetail.getCoordinates());
 
+
             long runTime = runDetail.getTime();
             String timeDiff = Utilities.formatLongToTimer(runTime - startTime);
 
-            if (i != 0 && i != runDetails.size() - 1) {
+            if (i != 0 && i != runDetails.size() - 1 ) {
 
-                if (lastPosition != null && isDirectionDisplayed) {
-                    float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
-                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)).rotation(degree));
-                } else {
-                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)));
+                LatLng nexPosition = Utilities.stringToLatLng(runDetails.get(i+1).getCoordinates());
+
+                //to avoid duplicate point in the same position
+                if(position.latitude != nexPosition.latitude && position.longitude != nexPosition.longitude){
+
+                    if (lastPosition != null && isDirectionDisplayed) {
+                        float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
+                        Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)).rotation(degree));
+                    } else {
+                        Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)));
+                    }
                 }
             }
 

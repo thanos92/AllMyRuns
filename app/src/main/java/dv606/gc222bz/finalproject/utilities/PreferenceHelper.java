@@ -19,14 +19,13 @@ public class PreferenceHelper {
 
     public static boolean isFirstStart(Context context){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        boolean isFirstStart = prefs.getBoolean(PREFS_FIRST_START, true);
-        return isFirstStart;
+        return  prefs.getBoolean(PREFS_FIRST_START, true);
     }
 
     public static void setFirstStart(Context context, Boolean isFirstStart){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefEditor = prefs.edit();
-        prefEditor.putBoolean(PREFS_WEIGHT, isFirstStart);
+        prefEditor.putBoolean(PREFS_FIRST_START, isFirstStart);
         prefEditor.apply();
     }
 
