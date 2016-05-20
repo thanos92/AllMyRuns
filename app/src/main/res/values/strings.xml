@@ -63,6 +63,10 @@
     <string name="map_button_label">See the route</string>
     <string name="marker_snippet">Distance: %1$s \nAverage Speed: %2$s \nBurned Calories: %3$s</string>
     <string name="prefs_start_time">prefs_start_time</string>
+    <string name="display_direction">Display direction</string>
+    <string name="show_run_details">Show run details</string>
+    <string name="start_title">Start</string>
+    <string name="end_title">End</string>
 
     <string-array name="gps_frequency_text">
         <item>10 seconds</item>

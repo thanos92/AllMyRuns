@@ -1,15 +1,23 @@
 package dv606.gc222bz.finalproject;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdate;
@@ -26,10 +34,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import dv606.gc222bz.finalproject.database.Run;
 import dv606.gc222bz.finalproject.database.RunDetails;
 import dv606.gc222bz.finalproject.database.RunsDataSource;
+import dv606.gc222bz.finalproject.utilities.Costants;
 import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
 import dv606.gc222bz.finalproject.utilities.Utilities;
 
@@ -41,6 +51,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private RunsDataSource runsDataSource;
     ArrayList<RunDetails> runDetails = new ArrayList<>();
     ArrayList<LatLng> coordinatesList = new ArrayList<>();
+    private Dialog dialog;
+    private Marker lastMarker;
+    private ListView runListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +80,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             coordinatesList.add(Utilities.stringToLatLng(runDetail.getCoordinates()));
         }
 
+        dialog = makeRunDetailsDialog(runDetails);
 
     }
 
@@ -89,6 +103,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 PreferenceHelper.setDisplayDirection(this, isDirectionDisplayed);
                 item.setChecked(isDirectionDisplayed);
                 return true;
+            }
+            case R.id.option_details:{
+                if(dialog != null && !dialog.isShowing()){
+                    dialog.show();
+                }
+                else if(dialog == null){
+                    dialog = makeRunDetailsDialog(runDetails);
+                    dialog.show();
+                }
             }
             default:
                 return false;
@@ -169,38 +192,78 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
     }
 
+    public Dialog makeRunDetailsDialog(List<RunDetails> list){
+        final Dialog listDialog = new Dialog(this);
+        View v = getLayoutInflater().inflate(R.layout.dialog_layout, null);
+        RunDetailsAdapter adapter = new RunDetailsAdapter(this, list);
+        runListView = (ListView) v.findViewById(R.id.run_details_list);
+        runListView.setAdapter(adapter);
+        runListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(mMap != null){
+                    dialog.dismiss();
+                    RunDetails runDetail = MapsActivity.this.runDetails.get(position);
+                    LatLng latLng = Utilities.stringToLatLng(runDetail.getCoordinates());
+
+                    if(MapsActivity.this.lastMarker != null){
+                        lastMarker.remove();
+                    }
+                    Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)).position(latLng).title(Utilities.formatLongToTimer(runDetail.getTime() - startTime)).snippet(makeSnippet(runDetail)));
+                    marker.showInfoWindow();
+                    lastMarker = marker;
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 20));
+
+                }
+            }
+        });
+
+        listDialog.setContentView(v);
+        listDialog.setCancelable(true);
+
+
+
+        return listDialog;
+    }
+
     private void makeRouteMarker(boolean isDirectionDisplayed) {
 
         LatLng lastPosition = null;
 
-        for (int i = 0; i < runDetails.size() ; i++) {
+        if(isDirectionDisplayed){
 
-            RunDetails runDetail = runDetails.get(i);
+            for (int i = 0; i < runDetails.size() ; i++) {
 
-            LatLng position = Utilities.stringToLatLng(runDetail.getCoordinates());
+                RunDetails runDetail = runDetails.get(i);
+
+                LatLng position = Utilities.stringToLatLng(runDetail.getCoordinates());
 
 
-            long runTime = runDetail.getTime();
-            String timeDiff = Utilities.formatLongToTimer(runTime - startTime);
+                long runTime = runDetail.getTime();
+                String timeDiff = Utilities.formatLongToTimer(runTime - startTime);
 
-            if (i != 0 && i != runDetails.size() - 1 ) {
+                if (i != 0 && i != runDetails.size() - 1 ) {
 
-                LatLng nexPosition = Utilities.stringToLatLng(runDetails.get(i+1).getCoordinates());
+                    LatLng nexPosition = Utilities.stringToLatLng(runDetails.get(i+1).getCoordinates());
 
-                //to avoid duplicate point in the same position
-                if(position.latitude != nexPosition.latitude && position.longitude != nexPosition.longitude){
+                    //to avoid duplicate point in the same position
+                    if(position.latitude != nexPosition.latitude && position.longitude != nexPosition.longitude){
 
-                    if (lastPosition != null && isDirectionDisplayed) {
-                        float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
-                        Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)).rotation(degree));
-                    } else {
+                        if (lastPosition != null) {
+                            float degree = (float) Utilities.bearing(lastPosition.latitude, lastPosition.longitude, position.latitude, position.longitude);
+                            Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_arrow)).anchor(0.5f, 0.3f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)).rotation(degree));
+                        }/*else {
                         Marker marker = mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_point)).anchor(0.5f, 0.5f).position(position).title(timeDiff).snippet(makeSnippet(runDetail)));
+                    } */
                     }
                 }
-            }
 
-            lastPosition = position;
+                lastPosition = position;
+            }
         }
+
+
 
             Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
@@ -211,8 +274,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             if (coordinatesList.size() > 1) {
 
-                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(Utilities.formatLongToTimer(runDetails.get(0).getTime() - startTime)).snippet(makeSnippet(runDetails.get(0))));
-                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(Utilities.formatLongToTimer(runDetails.get(runDetails.size() - 1).getTime() - startTime)).snippet(makeSnippet(runDetails.get(runDetails.size() - 1))));
+                Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(getString(R.string.start_title)).snippet(makeSnippet(runDetails.get(0))));
+                Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(getString(R.string.end_title)).snippet(makeSnippet(runDetails.get(runDetails.size() - 1))));
             }
 
     }
@@ -220,6 +283,36 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public String makeSnippet(RunDetails runDetails){
 
         return String.format(getString(R.string.marker_snippet), PreferenceHelper.getDistanceWithUnit(MapsActivity.this, (int)runDetails.getDistance()), PreferenceHelper.getSpeedWithUnit(MapsActivity.this,runDetails.getSpeed()), PreferenceHelper.getCaloriesWithUnit(MapsActivity.this,runDetails.getCalories() ));
+    }
+
+    public class RunDetailsAdapter extends ArrayAdapter<RunDetails>{
+
+
+        public RunDetailsAdapter(Context context, List<RunDetails> elements){
+            super(context, R.layout.rundetails_item, elements);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent){
+            View row = convertView;
+
+            if(row == null){
+                LayoutInflater inflater = getLayoutInflater();
+                row = inflater.inflate(R.layout.rundetails_item, parent, false);
+                row.setTag(R.id.time_list_detail, row.findViewById(R.id.time_list_detail));
+                row.setTag(R.id.list_detail, row.findViewById(R.id.list_detail));
+            }
+
+            RunDetails item = getItem(position);
+
+            TextView timeView = (TextView)row.findViewById(R.id.time_list_detail);
+            TextView detailsView = (TextView)row.findViewById(R.id.list_detail);
+            timeView.setText(Utilities.formatLongToTimer(item.getTime() - startTime));
+            detailsView.setText(makeSnippet(item));
+
+            return row;
+        }
+
     }
 
 }
