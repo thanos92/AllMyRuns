@@ -77,7 +77,7 @@ public class PreferenceHelper {
             return String.format("%1$s %2$s", distance, measureUnit[unitIndex]);
         }
 
-        return String.format("%1$s %2$s", String.format("%.1f", (float)distance / conversionFactors[unitIndex]), measureUnit[unitIndex]);
+        return String.format("%1$s %2$s", String.format("%.2f", (float)distance / conversionFactors[unitIndex]), measureUnit[unitIndex]);
     }
 
     public static long getMinGpsUpdateTime(Context context){
