@@ -82,7 +82,7 @@ public class PreferenceHelper {
 
     public static long getMinGpsUpdateTime(Context context){
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String timeString = prefs.getString(context.getString(R.string.prefs_gps_frequency), "10");
+        String timeString = prefs.getString(context.getString(R.string.prefs_gps_frequency), context.getString(R.string.gps_preference_default));
         return Long.parseLong(timeString) * 1000;
 
     }

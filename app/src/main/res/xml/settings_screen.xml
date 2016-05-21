@@ -11,7 +11,7 @@
 
         <ListPreference
             android:title="Gps update frequency"
-            android:defaultValue="10"
+            android:defaultValue="@string/gps_preference_default"
             android:entryValues="@array/gps_frequency_time"
             android:entries="@array/gps_frequency_text"
             android:summary="@string/gps_frequency_summary"

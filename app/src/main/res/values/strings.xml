@@ -67,13 +67,16 @@
     <string name="show_run_details">Show run details</string>
     <string name="start_title">Start</string>
     <string name="end_title">End</string>
+    <string name="gps_preference_default">8</string>
 
     <string-array name="gps_frequency_text">
-        <item>10 seconds</item>
+        <item>8 seconds</item>
+        <item>15 seconds</item>
         <item>20 seconds</item>
         <item>40 seconds</item>
-        <item>60 seconds</item>
     </string-array>
+
+
     <string-array name="history_sort_type">
       <item>Sort by time</item>
       <item>Sort by distance</item>

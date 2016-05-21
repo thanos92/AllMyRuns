@@ -263,13 +263,10 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
 
-
-
-            Polyline line = mMap.addPolyline(new PolylineOptions()
+        Polyline line = mMap.addPolyline(new PolylineOptions()
                     .add(coordinatesList.toArray(new LatLng[coordinatesList.size()]))
                     .width(8)
                     .color(Color.RED));
-
 
 
             if (coordinatesList.size() > 1) {

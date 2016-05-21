@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private ProgressDialog progressDialog;
     private AlertDialog confirmDialog;
     private boolean awaitStarting = false;
+    private Circle lastPositionCircle = null;
 
 
 
@@ -280,7 +282,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void makePoint(LatLng position) {
-        mMap.addCircle(new CircleOptions().radius(0.50).strokeColor(Color.BLUE).fillColor(Color.BLUE).center(position));
+        Circle circle = mMap.addCircle(new CircleOptions().radius(0.70).strokeColor(Color.CYAN).fillColor(Color.BLUE).center(position));
+
+        if(lastPositionCircle != null){
+            lastPositionCircle.remove();
+        }
+
+        lastPositionCircle = circle;
     }
 
     private void setEnabledOptionMenu(boolean isEnabled){
@@ -427,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         final EditText edittext = new EditText(this);
         InputFilter[] FilterArray = new InputFilter[1];
-        FilterArray[0] = new InputFilter.LengthFilter(10);
+        FilterArray[0] = new InputFilter.LengthFilter(Costants.RUN_TITLE_LENGTH);
         edittext.setFilters(FilterArray);
         edittext.setHint(R.string.run_name_default_text);
         alert.setMessage(getString(R.string.give_name_message));
