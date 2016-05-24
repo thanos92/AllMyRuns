@@ -197,6 +197,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         View v = getLayoutInflater().inflate(R.layout.dialog_layout, null);
         RunDetailsAdapter adapter = new RunDetailsAdapter(this, list);
         runListView = (ListView) v.findViewById(R.id.run_details_list);
+        TextView textView = (TextView) v.findViewById(R.id.title_text);
+        textView.setText(getString(R.string.listdialog_title));
         runListView.setAdapter(adapter);
         runListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
