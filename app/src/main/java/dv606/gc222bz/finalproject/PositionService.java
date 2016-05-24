@@ -137,10 +137,14 @@ public class PositionService extends Service implements android.location.Locatio
         mLastLocationMillis = SystemClock.elapsedRealtime();
         
 
+        if(location.getAccuracy() > Costants.GPS_ACCURACY && mActualState == PositionService.READY_STATE){
+            Toast.makeText(this, R.string.gps_weak_toast, Toast.LENGTH_SHORT).show();
+        }
+
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
         //allow only the position with the specified accuracy
-        if(location != null && location.hasAccuracy() && location.getAccuracy() <= 20 && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
+        if(location != null && location.hasAccuracy() && location.getAccuracy() <= Costants.GPS_ACCURACY && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
 
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
@@ -463,7 +467,11 @@ public class PositionService extends Service implements android.location.Locatio
         Notification.Builder notificationBuilder= new Notification.Builder(getApplicationContext());
         notificationBuilder.setSmallIcon(R.drawable.ic_notification_icon);
         notificationBuilder.setContentTitle(getString(R.string.notification_title_text));
-        notificationBuilder.setContentText(getString(R.string.notification_content_text));
+        String notificationMessage = getString(R.string.notification_content_text);
+        if(mActualState == AWAIT_SAVE_STATE){
+            notificationMessage = getString(R.string.await_save_message);
+        }
+        notificationBuilder.setContentText(notificationMessage);
         notificationBuilder.setLights(0x00ffff00, 1000, 0);
         notificationBuilder.setOngoing(true);
         Intent intent = new Intent(this, MainActivity.class);

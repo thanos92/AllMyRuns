@@ -68,6 +68,9 @@
     <string name="start_title">Start</string>
     <string name="end_title">End</string>
     <string name="gps_preference_default">8</string>
+    <string name="await_save_message">Await save confirmation</string>
+    <string name="listdialog_title">Tap on item to show it on map</string>
+    <string name="gps_weak_toast">GPS weak signal</string>
 
     <string-array name="gps_frequency_text">
         <item>8 seconds</item>

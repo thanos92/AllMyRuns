@@ -282,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void makePoint(LatLng position) {
-        Circle circle = mMap.addCircle(new CircleOptions().radius(0.70).strokeColor(Color.CYAN).fillColor(Color.BLUE).center(position));
+        Circle circle = mMap.addCircle(new CircleOptions().radius(1D).strokeColor(Color.CYAN).fillColor(Color.BLUE).center(position));
 
         if(lastPositionCircle != null){
             lastPositionCircle.remove();

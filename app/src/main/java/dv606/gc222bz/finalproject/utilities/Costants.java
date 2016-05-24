@@ -11,5 +11,6 @@ public class Costants {
     public static long GPS_START_INTERVAL = 20000;
     public static long GPS_INIT_INTERVAL = 8000;
     public static int MAP_CAMERA_ZOOM_FACTOR = 18;
+    public static int GPS_ACCURACY = 20;
 
 }
