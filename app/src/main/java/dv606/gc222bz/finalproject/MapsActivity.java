@@ -272,10 +272,14 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     .color(Color.RED));
 
 
-            if (coordinatesList.size() > 1) {
+            if (coordinatesList.size() > 0) {
 
                 Marker startMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(coordinatesList.get(0)).title(getString(R.string.start_title)).snippet(makeSnippet(runDetails.get(0))));
+
+                if(coordinatesList.size() > 1)  {
                 Marker endMarker = mMap.addMarker(new MarkerOptions() .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).position(coordinatesList.get(coordinatesList.size()-1)).title(getString(R.string.end_title)).snippet(makeSnippet(runDetails.get(runDetails.size() - 1))));
+                }
+
             }
 
     }

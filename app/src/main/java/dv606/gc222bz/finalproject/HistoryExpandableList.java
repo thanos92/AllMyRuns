@@ -162,4 +162,9 @@ public class HistoryExpandableList extends BaseExpandableListAdapter {
         notifyDataSetChanged();
     }
 
+    public void renameGroup(int group, String name){
+        runs.get(group).setName(name);
+        notifyDataSetChanged();
+    }
+
 }

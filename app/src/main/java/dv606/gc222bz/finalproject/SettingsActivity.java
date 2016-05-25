@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.MenuItem;
 
 import dv606.gc222bz.finalproject.utilities.Costants;
 import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
@@ -28,6 +29,17 @@ public class SettingsActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        switch (itemId){
+            case android.R.id.home:{
+                onBackPressed();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
