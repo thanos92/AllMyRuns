@@ -181,7 +181,7 @@ public class PositionService extends Service implements android.location.Locatio
             }
             else {
 
-                if(mLastPreciseLocation.getLatitude() !=latitude && mLastPreciseLocation.getLongitude() != longitude){
+                if(mLastPreciseLocation.getLatitude() !=latitude || mLastPreciseLocation.getLongitude() != longitude){
 
                     long currentTime = System.currentTimeMillis();
 

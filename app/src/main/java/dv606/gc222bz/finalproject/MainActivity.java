@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public void resetAll(){
+    public void resetAll(){//reset the map and all textviews
 
         isRunning = false;
 
@@ -281,8 +281,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    private void makePoint(LatLng position) {
-        Circle circle = mMap.addCircle(new CircleOptions().radius(1D).strokeColor(Color.CYAN).fillColor(Color.BLUE).center(position));
+    private void makePoint(LatLng position) { //update the circle on the map
+        Circle circle = mMap.addCircle(new CircleOptions().radius(2D).strokeColor(Color.CYAN).fillColor(Color.BLUE).center(position));
 
         if(lastPositionCircle != null){
             lastPositionCircle.remove();
@@ -336,13 +336,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     setEnabledOptionMenu(false);
                     resetIndicator();
                 }
-                else if(intent.getAction().equals(PositionService.POSITION_GETTED_INTENT)){
+                else if(intent.getAction().equals(PositionService.POSITION_GETTED_INTENT)){ //a new position is received by the gps
 
                     if(progressDialog != null && progressDialog.isShowing()){
 
                         progressDialog.hide();
                     }
 
+                    //display the value sent by the service
                     double lat = intent.getDoubleExtra(getString(R.string.lat_extra), 0);
                     double lon = intent.getDoubleExtra(getString(R.string.lon_extra), 0);
 
@@ -395,6 +396,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Intent intent = new Intent(this, PositionService.class);
         startService(intent);
 
+        //bind the service to the activity
         if(mPositionServiceBinder == null){
             bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
         }
@@ -406,16 +408,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         isRunning = false;
 
+        //put service in foreground if it is in execution
         if(mPositionServiceBinder != null && (mPositionServiceBinder.getState() != PositionService.STOP_STATE)){
             mPositionServiceBinder.makeForeground(mLastTimer);
         }
 
-
+        //detach service
         if(mPositionServiceBinder != null){
             unbindService(mServerConn);
             mPositionServiceBinder = null;
         }
 
+        //remove all receiver when the activity is paused
         if(receiver != null){
             unregisterReceiver(receiver);
             receiver = null;
@@ -424,11 +428,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //endregion
 
 
+    //set a boolean that tell to the service that can start
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
            awaitStarting = true;
     }
 
+    //dialog to save and give name to the activity
     public AlertDialog.Builder makeConfirmDialog(){
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setCancelable(false);
@@ -485,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
+    //dialog that appear at the first start of the application
     public AlertDialog.Builder makeWelcomeDialog(boolean displayError){
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(this);
@@ -533,6 +540,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         return alert;
     }
 
+    //class that handle the timer
     public class TimerTask implements Runnable {
 
         private final long delay;

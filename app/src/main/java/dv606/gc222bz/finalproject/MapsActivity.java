@@ -221,7 +221,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-        listDialog.setTitle(R.string.listdialog_title);
         listDialog.setContentView(v);
         listDialog.setCancelable(true);
 
