@@ -166,6 +166,9 @@ public class PositionService extends Service implements android.location.Locatio
                     player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
                     player.start();
                 }
+                else{
+                    Toast.makeText(this, R.string.activity_started, Toast.LENGTH_SHORT).show();
+                }
 
                 mStartTime = System.currentTimeMillis();
                 mDistance = 0;
@@ -262,7 +265,6 @@ public class PositionService extends Service implements android.location.Locatio
 
                 if (isGPSFix) { // A fix has been acquired.
                     playEnabledGpsSound();
-                    isWarnPlayed = false;
                 } else {
                     playDisabledGpsSound();
                 }
@@ -368,19 +370,30 @@ public class PositionService extends Service implements android.location.Locatio
 
     public void playEnabledGpsSound(){
         //play sound only when the location service is running and no other audio is playing
-        if(isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
+        boolean isAudioEnabled = PreferenceHelper.getIsAudioEnabled(this);
+        if(isWarnPlayed && mActualState == START_STATE && isAudioEnabled && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
             player.start();
+            isWarnPlayed = false;
         }
+        else if(!isAudioEnabled){ //otherwise show toast message
+            Toast.makeText(this, R.string.gps_connected, Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void playDisabledGpsSound(){
         //play sound only when the location service is running and no other audio is playing
-        if(!isWarnPlayed && mActualState == START_STATE && PreferenceHelper.getIsAudioEnabled(this) && (player == null || !player.isPlaying())){
+        boolean isAudioEnabled = PreferenceHelper.getIsAudioEnabled(this);
+        if(!isWarnPlayed && mActualState == START_STATE && isAudioEnabled && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
             player.start();
             isWarnPlayed = true;
         }
+        else if(!isAudioEnabled){ //otherwise show toast message
+            Toast.makeText(this, R.string.gps_connection_lost, Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     public void startPositionService()

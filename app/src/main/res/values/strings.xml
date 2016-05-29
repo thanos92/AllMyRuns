@@ -76,6 +76,9 @@
     <string name="change_name_title">Insert a new name</string>
     <string name="cancel_button">Cancel</string>
     <string name="confirm_button">Confirm</string>
+    <string name="activity_started">Activity started</string>
+    <string name="gps_connected">GPS connected</string>
+    <string name="gps_connection_lost">GPS connection lost</string>
 
     <string-array name="gps_frequency_text">
         <item>8 seconds</item>
