@@ -157,6 +157,7 @@ public class PositionService extends Service implements android.location.Locatio
             if(mActualState == READY_STATE){
 
                 changeState(START_STATE);
+                isWarnPlayed = false;
 
                 if(Costants.GPS_INIT_INTERVAL != mGpsUpdateInterval) {
                     setGPSInterval(mGpsUpdateInterval);
@@ -207,12 +208,6 @@ public class PositionService extends Service implements android.location.Locatio
                             maxSpeed = calculatedSpeed;
                         }
 
-                        /*if(mMediumSpeed != 0){
-                            mMediumSpeed = (mMediumSpeed + calculatedSpeed) / 2;
-                        }
-                        else {
-                            mMediumSpeed = calculatedSpeed;
-                        }*/
 
                         mSpeed = calculatedSpeed;
 
@@ -251,6 +246,7 @@ public class PositionService extends Service implements android.location.Locatio
     @Override
     public void onProviderDisabled(String provider) {
         isGPSFix = false;
+        mLastLocation = null;
         playDisabledGpsSound();
     }
 
@@ -261,6 +257,9 @@ public class PositionService extends Service implements android.location.Locatio
                 if (mLastLocation != null){
                     //if the last location is old of an interval the gps is disconnected
                     isGPSFix = (SystemClock.elapsedRealtime() - mLastLocationMillis) < (mGpsUpdateInterval * 2);
+                }
+                else {
+                    isGPSFix = false;
                 }
 
                 if (isGPSFix) { // A fix has been acquired.
@@ -374,11 +373,12 @@ public class PositionService extends Service implements android.location.Locatio
         if(isWarnPlayed && mActualState == START_STATE && isAudioEnabled && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connected);
             player.start();
-            isWarnPlayed = false;
         }
         else if(!isAudioEnabled){ //otherwise show toast message
             Toast.makeText(this, R.string.gps_connected, Toast.LENGTH_SHORT).show();
         }
+
+        isWarnPlayed = false;
 
     }
 
@@ -388,12 +388,12 @@ public class PositionService extends Service implements android.location.Locatio
         if(!isWarnPlayed && mActualState == START_STATE && isAudioEnabled && (player == null || !player.isPlaying())){
             player = MediaPlayer.create(PositionService.this, R.raw.gps_connection_lost);
             player.start();
-            isWarnPlayed = true;
         }
         else if(!isAudioEnabled){ //otherwise show toast message
             Toast.makeText(this, R.string.gps_connection_lost, Toast.LENGTH_SHORT).show();
         }
 
+        isWarnPlayed = true;
     }
 
     public void startPositionService()
