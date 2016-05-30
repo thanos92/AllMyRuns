@@ -49,7 +49,8 @@ public class PositionService extends Service implements android.location.Locatio
     private long mForegroundTime, mLastForegroundTime, mLastInterval;
     private int mDistance, mConsumedCalories;
     private float mSpeed, mMediumSpeed, maxSpeed;
-    private boolean isGPSFix, isWarnPlayed = true;
+    private boolean isGPSFix; //true when the gps is fixed false otherwise
+    boolean isWarnPlayed = true; //true when enabled sound can play, false when disabled sound can play
 
     private long mGpsUpdateInterval;
 
@@ -135,16 +136,13 @@ public class PositionService extends Service implements android.location.Locatio
 
         mLastLocation = location;
         mLastLocationMillis = SystemClock.elapsedRealtime();
-        
-
-        if(location.getAccuracy() > Costants.GPS_ACCURACY && mActualState == PositionService.READY_STATE){
-            Toast.makeText(this, R.string.gps_weak_toast, Toast.LENGTH_SHORT).show();
-        }
 
         Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
-        //allow only the position with the specified accuracy
-        if(location != null && location.hasAccuracy() && location.getAccuracy() <= Costants.GPS_ACCURACY && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
+        if(location.getAccuracy() > Costants.GPS_ACCURACY && (mActualState == PositionService.READY_STATE || mActualState == PositionService.START_STATE)){
+            Toast.makeText(this, R.string.gps_weak_toast, Toast.LENGTH_SHORT).show();
+        } //allow only the position with the specified accuracy
+        else if(location != null && location.hasAccuracy() && location.getAccuracy() <= Costants.GPS_ACCURACY && isBetterLocation(location, mLastPreciseLocation) && (mActualState == READY_STATE || mActualState == START_STATE)){
 
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();

@@ -90,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 setIndicator(mPositionServiceBinder.getmDistance(), mPositionServiceBinder.getmMediumSpeed(), mPositionServiceBinder.getmConsumedCalories());
                 mStopButton.setVisibility(View.VISIBLE);
                 mStartButton.setVisibility(View.INVISIBLE);
-                setEnabledOptionMenu(false);
             }
             else if(mPositionServiceBinder.getState() == PositionService.READY_STATE){
 
@@ -255,6 +254,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(mPositionServiceBinder != null && mPositionServiceBinder.getState() == PositionService.START_STATE){
+            setEnabledOptionMenu(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case R.id.option_history: {
@@ -333,7 +340,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     mStopButton.setVisibility(View.VISIBLE);
                     mStartButton.setVisibility(View.INVISIBLE);
-                    setEnabledOptionMenu(false);
                     resetIndicator();
                 }
                 else if(intent.getAction().equals(PositionService.POSITION_GETTED_INTENT)){ //a new position is received by the gps
