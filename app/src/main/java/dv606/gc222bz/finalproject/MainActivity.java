@@ -298,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         lastPositionCircle = circle;
     }
 
+    //disable all buttons of the menu expect specific buttons
     private void setEnabledOptionMenu(boolean isEnabled){
 
         if(mMenu != null){
@@ -306,7 +307,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             for(int i = 0; i< menuSize; i++){
                 MenuItem item = mMenu.getItem(i);
-                if(item.getItemId() != R.id.option_camera_auto && item.getItemId() != R.id.option_enable_audio && item.getItemId() != R.id.option_history){
+                if(item.getItemId() != R.id.option_camera_auto && item.getItemId() != R.id.option_enable_audio){
                     item.setEnabled(isEnabled);
                 }
             }

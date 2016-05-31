@@ -47,7 +47,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onPostCreate(savedInstanceState);
 
         pref = (EditTextPreference)fragment.findPreference(getString(R.string.prefs_weight));
-        pref.setSummary(pref.getText());
+        pref.setSummary(String.format(getString(R.string.weight_with_unit_text), pref.getText()));
 
         //raised when the user insert a value in the weight preference and display a message if the value is not valid
         //the value will be saved if the value is in the range

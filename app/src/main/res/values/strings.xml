@@ -70,7 +70,7 @@
     <string name="gps_preference_default">8</string>
     <string name="await_save_message">Await save confirmation</string>
     <string name="listdialog_title">Tap on item to show it on map</string>
-    <string name="gps_weak_toast">GPS weak signal</string>
+    <string name="gps_weak_toast">Weak GPS signal</string>
     <string name="context_rename_message">Rename Activity</string>
     <string name="change_name_message">Change the activity name</string>
     <string name="change_name_title">Insert a new name</string>
