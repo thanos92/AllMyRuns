@@ -8,9 +8,10 @@ public class Costants {
     public static int RUN_TITLE_LENGTH = 15;
     public static int MILLIS_TO_SECONDS_FACTOR = 1000000;
     public static String TIMER_ZERO_VALUE = "00:00:00";
-    public static long GPS_START_INTERVAL = 20000;
     public static long GPS_INIT_INTERVAL = 8000;
     public static int MAP_CAMERA_ZOOM_FACTOR = 18;
-    public static int GPS_ACCURACY = 20;
+    public static int GPS_ACCURACY = 25;
+    public static final int ZERO_DISTANCE_CHANGE_FOR_UPDATES = 0;
+
 
 }

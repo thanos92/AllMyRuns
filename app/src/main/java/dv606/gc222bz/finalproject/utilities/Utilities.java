@@ -99,7 +99,7 @@ public class Utilities {
         return manager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
-    public static AlertDialog.Builder makeWelcomedialog(Context context, String message, String title){
+    public static AlertDialog.Builder makeDialog(Context context, String message, String title){
 
         final AlertDialog.Builder alert = new AlertDialog.Builder(context);
 

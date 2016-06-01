@@ -10,7 +10,6 @@ import android.text.TextUtils;
 import android.view.MenuItem;
 
 import dv606.gc222bz.finalproject.utilities.Costants;
-import dv606.gc222bz.finalproject.utilities.PreferenceHelper;
 import dv606.gc222bz.finalproject.utilities.Utilities;
 
 public class SettingsActivity extends AppCompatActivity {
@@ -68,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                 }
 
-                Utilities.makeWelcomedialog(SettingsActivity.this, String.format(getString(R.string.error_weight_message),Costants.MIN_WEIGHT, Costants.MAX_WEIGHT), getString(R.string.error_message)).show();
+                Utilities.makeDialog(SettingsActivity.this, String.format(getString(R.string.error_weight_message),Costants.MIN_WEIGHT, Costants.MAX_WEIGHT), getString(R.string.error_message)).show();
 
                 return false;
             }

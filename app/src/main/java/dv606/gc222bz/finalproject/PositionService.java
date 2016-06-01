@@ -61,7 +61,6 @@ public class PositionService extends Service implements android.location.Locatio
 
     private ArrayList<LatLng> collectedPoints = new ArrayList<>();
     private ArrayList<RunDetails> runDetailsList = new ArrayList<>();
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0;
 
     //endregion
 
@@ -87,8 +86,8 @@ public class PositionService extends Service implements android.location.Locatio
 
         //request location update with medium time to allow the gps to fix to satellites
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
-                , Costants.GPS_START_INTERVAL,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                , Costants.GPS_INIT_INTERVAL,
+                Costants.ZERO_DISTANCE_CHANGE_FOR_UPDATES, this);
 
         locationManager.addGpsStatusListener(this);
 
@@ -157,9 +156,9 @@ public class PositionService extends Service implements android.location.Locatio
                 changeState(START_STATE);
                 isWarnPlayed = false;
 
-                if(Costants.GPS_INIT_INTERVAL != mGpsUpdateInterval) {
-                    setGPSInterval(mGpsUpdateInterval);
-                }
+                /*if(Costants.GPS_INIT_INTERVAL != mGpsUpdateInterval) {
+                    setGPSInterval(mGpsUpdateInterval, Costants.MIN_DISTANCE_CHANGE_FOR_UPDATES);
+                }*/
 
                 if(PreferenceHelper.getIsAudioEnabled(this)){
                     player = MediaPlayer.create(PositionService.this, R.raw.activity_started);
@@ -396,24 +395,25 @@ public class PositionService extends Service implements android.location.Locatio
 
     public void startPositionService()
     {
-        changeState(READY_STATE);
-        setGPSInterval(Costants.GPS_INIT_INTERVAL);
+        if(mActualState == STOP_STATE){
+            changeState(READY_STATE);
+            setGPSInterval(mGpsUpdateInterval, Costants.ZERO_DISTANCE_CHANGE_FOR_UPDATES);
+        }
     }
 
-    private void setGPSInterval(long gpsInitInterval) {
-
+    private void setGPSInterval(long gpsInitInterval, int distanceForUpdate) {
 
             //locationManager.removeUpdates(PositionService.this);
 
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER
                     , gpsInitInterval,
-                    MIN_DISTANCE_CHANGE_FOR_UPDATES, PositionService.this);
+                    distanceForUpdate, PositionService.this);
     }
 
     public void stopPositionService(boolean saveData){
         mEndTime = System.currentTimeMillis();
 
-        setGPSInterval(Costants.GPS_START_INTERVAL);
+        setGPSInterval(Costants.GPS_INIT_INTERVAL, Costants.ZERO_DISTANCE_CHANGE_FOR_UPDATES);
 
         if(saveData){
             changeState(AWAIT_SAVE_STATE);

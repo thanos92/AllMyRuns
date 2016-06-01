@@ -88,14 +88,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 isRunning = true;
                 new Thread(new TimerTask(mPositionServiceBinder.getmForegroundTime())).start();
                 setIndicator(mPositionServiceBinder.getmDistance(), mPositionServiceBinder.getmMediumSpeed(), mPositionServiceBinder.getmConsumedCalories());
-                mStopButton.setVisibility(View.VISIBLE);
-                mStartButton.setVisibility(View.INVISIBLE);
+
+                startedStateButton();
             }
             else if(mPositionServiceBinder.getState() == PositionService.READY_STATE){
 
                 if(progressDialog != null && !progressDialog.isShowing()){
                     progressDialog.show();
+                    mStartButton.setEnabled(false);
                 }
+
+
             }
             else if(mPositionServiceBinder.getState() == PositionService.AWAIT_SAVE_STATE){
                 if(confirmDialog == null || !confirmDialog.isShowing()){
@@ -130,11 +133,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setMessage(getString(R.string.gps_progress_message));
         progressDialog.setCancelable(false);
+
         progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.cancel_message), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 mPositionServiceBinder.stopPositionService(false);
+                mStartButton.setEnabled(true);
                 resetAll();
+                stopStateButton();
             }
         });
 
@@ -143,6 +149,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
 
+                mStartButton.setEnabled(false);
                 startPositionService();
             }
         });
@@ -152,21 +159,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mStopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                mStopButton.setEnabled(false);
                 resetAll();
                 setEnabledOptionMenu(true);
-
                 mPositionServiceBinder.stopPositionService(true);
-
                 confirmDialog = makeConfirmDialog().show();
-
-
-
             }
         });
 
-        mStopButton.setVisibility(View.INVISIBLE);
-        mStartButton.setVisibility(View.VISIBLE);
+        stopStateButton();
 
         resetIndicator();
     }
@@ -189,8 +190,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         isRunning = false;
 
-        mStartButton.setVisibility(View.VISIBLE);
-        mStopButton.setVisibility(View.INVISIBLE);
         mLastPosition = null;
 
         if(mMap != null){
@@ -198,6 +197,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         resetIndicator();
+    }
+
+    private void stopStateButton() {
+        mStartButton.setVisibility(View.VISIBLE);
+        mStopButton.setVisibility(View.INVISIBLE);
+
+        mStartButton.setEnabled(true);
+        mStopButton.setEnabled(false);
     }
 
     public void resetIndicator(){
@@ -339,8 +346,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     isRunning = true;
                     new Thread(new TimerTask(startTime)).start();
 
-                    mStopButton.setVisibility(View.VISIBLE);
-                    mStartButton.setVisibility(View.INVISIBLE);
+                    startedStateButton();
+
+
                     resetIndicator();
                 }
                 else if(intent.getAction().equals(PositionService.POSITION_GETTED_INTENT)){ //a new position is received by the gps
@@ -394,6 +402,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
 
+    }
+
+    private void startedStateButton() {
+        mStartButton.setVisibility(View.INVISIBLE);
+        mStopButton.setVisibility(View.VISIBLE);
+
+        mStartButton.setEnabled(false);
+        mStopButton.setEnabled(true);
     }
 
     @Override
@@ -482,6 +498,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mPositionServiceBinder.saveData(false, null);
                     arg0.dismiss();
                 }
+
                 return true;
             }
         });
@@ -491,6 +508,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         alert.setNegativeButton(getString(R.string.no_text), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
                 mPositionServiceBinder.saveData(false, null);
+            }
+        });
+
+        alert.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                stopStateButton();
+            }
+        });
+
+        alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                stopStateButton();
             }
         });
 
@@ -582,7 +613,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void run() {
-            mTimerText.setText(timer);
+            if(isRunning){
+                mTimerText.setText(timer);
+            }
+            else{
+                mTimerText.setText(Costants.TIMER_ZERO_VALUE);
+            }
+
         }
     };
 
