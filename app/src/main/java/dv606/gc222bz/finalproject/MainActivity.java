@@ -1,5 +1,6 @@
 package dv606.gc222bz.finalproject;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -13,6 +14,7 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -86,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
 
                 isRunning = true;
-                new Thread(new TimerTask(mPositionServiceBinder.getmForegroundTime())).start();
+                new Thread(new TimerTask(mPositionServiceBinder.getmForegroundTime())).start(); //restart timer
                 setIndicator(mPositionServiceBinder.getmDistance(), mPositionServiceBinder.getmMediumSpeed(), mPositionServiceBinder.getmConsumedCalories());
 
                 startedStateButton();
@@ -97,7 +99,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     progressDialog.show();
                     mStartButton.setEnabled(false);
                 }
-
 
             }
             else if(mPositionServiceBinder.getState() == PositionService.AWAIT_SAVE_STATE){
@@ -182,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
         else{
 
-            Utilities.showGpsDialog(MainActivity.this, 100);
+            showGpsDialog(MainActivity.this, 100);
         }
     }
 
@@ -576,6 +577,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
         return alert;
+    }
+
+    public void showGpsDialog(final Activity activity, final int requestCode){
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle(getString(R.string.gps_found_messag));
+        builder.setMessage(getString(R.string.gps_ask));
+
+        builder.setPositiveButton(R.string.yes_text, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                activity.startActivityForResult(settingsIntent, requestCode);
+            }
+        });
+
+        builder.setNegativeButton(R.string.no_text, new DialogInterface.OnClickListener()
+        {
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                dialogInterface.dismiss();
+            }
+        });
+
+        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialogInterface) {
+                mStartButton.setEnabled(true);
+            }
+        });
+
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                mStartButton.setEnabled(true);
+            }
+        });
+
+        builder.create().show();
     }
 
     //class that handle the timer

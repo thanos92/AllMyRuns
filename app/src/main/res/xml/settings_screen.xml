@@ -4,13 +4,13 @@
     <PreferenceCategory android:title="General Settings">
         <EditTextPreference
             android:key="@string/prefs_weight"
-            android:title="Set Weight"
+            android:title="Change the Weight"
             android:inputType="number"
             android:maxLength="3"
             android:defaultValue="50" />
 
         <ListPreference
-            android:title="Gps update frequency"
+            android:title="@string/gps_settings"
             android:defaultValue="@string/gps_preference_default"
             android:entryValues="@array/gps_frequency_time"
             android:entries="@array/gps_frequency_text"
@@ -19,22 +19,22 @@
         </ListPreference>
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Unit Measure settings">
-        <ListPreference android:dialogTitle="Select speed unit measure"
+    <PreferenceCategory android:title="@string/setting_unit_measure">
+        <ListPreference android:dialogTitle="@string/speed"
             android:defaultValue="1"
             android:entryValues="@array/speed_array_index"
             android:entries="@array/speed_measure_unit"
             android:key="prefs_speed"
-            android:title="Select speed measure unit"
-            android:summary="change the measure unit of the speed">
+            android:title="@string/speed"
+            android:summary="@string/summary_speed">
         </ListPreference>
-        <ListPreference android:dialogTitle="Select speed unit measure"
+        <ListPreference android:dialogTitle="@string/distance"
             android:defaultValue="1"
             android:entryValues="@array/array_index"
             android:entries="@array/distance_measure_unit"
             android:key="prefs_distance"
-            android:title="Select distance measure unit"
-            android:summary="change the measure unit of the distance">
+            android:title="@string/distance"
+            android:summary="@string/summary_distance">
         </ListPreference>
     </PreferenceCategory>
 

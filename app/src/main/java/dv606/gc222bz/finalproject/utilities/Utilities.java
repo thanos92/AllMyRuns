@@ -69,31 +69,6 @@ public class Utilities {
     }
 
 
-    public static void showGpsDialog(final Activity activity, final int requestCode){
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setTitle("GPS Not Found");
-        builder.setMessage("Want To Enable?");
-
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener()
-        {
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-                Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                activity.startActivityForResult(settingsIntent, requestCode);
-            }
-        });
-
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener()
-        {
-            public void onClick(DialogInterface dialogInterface, int i)
-            {
-
-            }
-        });
-
-        builder.create().show();
-    }
-
     public static boolean isGpsEnabled(final Context context){
         LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE );
         return manager.isProviderEnabled(LocationManager.GPS_PROVIDER);

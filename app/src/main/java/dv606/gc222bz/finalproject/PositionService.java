@@ -79,7 +79,7 @@ public class PositionService extends Service implements android.location.Locatio
 
         mGpsUpdateInterval = PreferenceHelper.getMinGpsUpdateTime(PositionService.this);
 
-        Toast.makeText(this,""+mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,""+mGpsUpdateInterval, Toast.LENGTH_SHORT).show();
 
         //initialize location manager
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -136,7 +136,7 @@ public class PositionService extends Service implements android.location.Locatio
         mLastLocation = location;
         mLastLocationMillis = SystemClock.elapsedRealtime();
 
-        Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,""+location.getAccuracy(), Toast.LENGTH_SHORT).show();
 
         if(location.getAccuracy() > Costants.GPS_ACCURACY && (mActualState == PositionService.READY_STATE || mActualState == PositionService.START_STATE)){
             Toast.makeText(this, R.string.gps_weak_toast, Toast.LENGTH_SHORT).show();
@@ -248,7 +248,7 @@ public class PositionService extends Service implements android.location.Locatio
     }
 
     @Override
-    public void onGpsStatusChanged(int event) {
+    public void onGpsStatusChanged(int event) { //this is event is not called on the emulator
         switch (event) {
             case GpsStatus.GPS_EVENT_SATELLITE_STATUS:
                 if (mLastLocation != null){
@@ -500,6 +500,7 @@ public class PositionService extends Service implements android.location.Locatio
         return mActualState;
     }
 
+    //calculate the time between the pause and the resume of the application
     public long getmForegroundTime(){
         long pausedTime = System.currentTimeMillis() - mLastForegroundTime;
         return this.mForegroundTime + pausedTime;

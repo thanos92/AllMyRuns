@@ -45,7 +45,7 @@
             android:name=".HistoryActivity"
             android:parentActivityName=".MainActivity"
             android:label="@string/history_label" />
-        <activity android:name=".SettingsActivity"/>
+        <activity android:label="@string/settings_label" android:name=".SettingsActivity"/>
     </application>
 
 </manifest>
